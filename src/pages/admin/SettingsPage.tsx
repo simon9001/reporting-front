@@ -12,12 +12,14 @@ export function SettingsPage() {
   const defs = useShiftDefinitions()
   const rules = useEscalationRules()
   const settings = useSettings()
+  const failed = defs.error ?? rules.error ?? settings.error
   return (
     <div className="space-y-6">
       <PageHeader title="Settings" description="Shift times, escalation rules and system settings." />
-      {defs.data ? <ShiftTimesCard defs={defs.data} /> : <Spinner />}
-      {rules.data ? <EscalationCard rules={rules.data} /> : <Spinner />}
-      {settings.data ? <SystemSettingsCard settings={settings.data} /> : <Spinner />}
+      {failed && <Alert>{errorMessage(failed)}</Alert>}
+      {defs.data ? <ShiftTimesCard defs={defs.data} /> : !failed && <Spinner />}
+      {rules.data ? <EscalationCard rules={rules.data} /> : !failed && <Spinner />}
+      {settings.data ? <SystemSettingsCard settings={settings.data} /> : !failed && <Spinner />}
     </div>
   )
 }

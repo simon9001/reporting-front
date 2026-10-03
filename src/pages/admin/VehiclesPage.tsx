@@ -38,6 +38,7 @@ export function VehiclesPage() {
         {errors._form && <div className="mt-3"><Alert>{errors._form}</Alert></div>}
       </Card>
       <Card title="Vehicles">
+        {update.isError && <div className="mb-3"><Alert>{errorMessage(update.error)}</Alert></div>}
         {vehicles.isPending ? <Spinner /> : vehicles.isError ? <Alert>{errorMessage(vehicles.error)}</Alert> : (
           <Table head={['ID', 'Description', 'Status', '']}>
             {vehicles.data.map((v) => (

@@ -49,6 +49,7 @@ export function LookupsPage() {
             </div>
             <Button onClick={add} disabled={create.isPending}>Add</Button>
           </div>
+          {update.isError && <Alert>{errorMessage(update.error)}</Alert>}
           {items.isPending ? <Spinner /> : items.isError ? <Alert>{errorMessage(items.error)}</Alert> : (
             <Table head={['Value', 'Order', 'Status', '']}>
               {items.data.map((item) => (
