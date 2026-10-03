@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { csvToList, listToCsv, patchParams, readFilters } from './urlFilters'
+import { clearParams, csvToList, listToCsv, patchParams, readFilters } from './urlFilters'
 
 describe('URL filters', () => {
   it('round-trips filters through the query string so links can be shared', () => {
@@ -14,5 +14,9 @@ describe('URL filters', () => {
     expect(next.toString()).toBe('status=RESOLVED')
     expect(patchParams(start, { page: '4' }).get('page')).toBe('4')
     expect(listToCsv([])).toBeUndefined()
+  })
+  it('clears only filter keys and the page, keeping sort and open', () => {
+    const start = new URLSearchParams('q=x&status=OPEN&page=3&sort=ref&open=INC-1')
+    expect(clearParams(start, ['q', 'status']).toString()).toBe('sort=ref&open=INC-1')
   })
 })

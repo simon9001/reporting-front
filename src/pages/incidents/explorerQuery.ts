@@ -1,7 +1,14 @@
 import type { FilterValues } from '../../lib/urlFilters'
 
 export const EXPLORER_KEYS = ['q', 'from', 'to', 'severity', 'status', 'categoryId', 'locationId', 'shiftCode', 'shiftId', 'hasAttachments', 'sort', 'page', 'open'] as const
-const FILTER_KEYS = ['q', 'from', 'to', 'severity', 'status', 'categoryId', 'locationId', 'shiftCode', 'shiftId', 'hasAttachments'] as const
+export const FILTER_KEYS = ['q', 'from', 'to', 'severity', 'status', 'categoryId', 'locationId', 'shiftCode', 'shiftId', 'hasAttachments'] as const
+
+export function parsePage(raw: string | undefined): number {
+  const n = Math.floor(Number(raw))
+  return Number.isFinite(n) && n >= 1 ? n : 1
+}
+
+export const lastPage = (total: number, pageSize: number) => Math.max(1, Math.ceil(total / pageSize))
 
 export function explorerQuery(v: FilterValues) {
   return {
@@ -16,7 +23,7 @@ export function explorerQuery(v: FilterValues) {
     shiftId: v.shiftId,
     hasAttachments: v.hasAttachments,
     sort: v.sort ?? '-occurredAt',
-    page: Number(v.page ?? 1) || 1,
+    page: parsePage(v.page),
     pageSize: 25,
   }
 }

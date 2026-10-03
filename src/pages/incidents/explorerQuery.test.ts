@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { explorerQuery, hasActiveFilters } from './explorerQuery'
+import { explorerQuery, hasActiveFilters, lastPage, parsePage } from './explorerQuery'
 
 describe('explorer query', () => {
   it('maps URL values to the API query with defaults', () => {
@@ -12,5 +12,11 @@ describe('explorer query', () => {
   it('knows when filters are active (ignoring sort, page and the open drawer)', () => {
     expect(hasActiveFilters({ sort: 'ref', page: '3', open: 'INC-1' })).toBe(false)
     expect(hasActiveFilters({ status: 'OPEN' })).toBe(true)
+  })
+  it('falls back to page 1 for invalid pages and computes the last page', () => {
+    for (const bad of ['abc', '0', '-2', '', undefined]) expect(parsePage(bad)).toBe(1)
+    expect(parsePage('4')).toBe(4)
+    expect(lastPage(0, 25)).toBe(1)
+    expect(lastPage(51, 25)).toBe(3)
   })
 })

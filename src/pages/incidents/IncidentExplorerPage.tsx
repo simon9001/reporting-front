@@ -1,5 +1,6 @@
 import { INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, SEVERITIES, SEVERITY_LABELS } from '@sr/shared'
 import { Download, Paperclip } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useShiftDefinitions, useLookups } from '../../api/config'
 import { useIncidents } from '../../api/incidents'
 import { useMe } from '../../auth/hooks'
@@ -11,15 +12,16 @@ import { MultiSelect } from '../../components/MultiSelect'
 import { filterButtonClass } from '../../components/Popover'
 import { Segmented } from '../../components/Segmented'
 import { Alert, Badge, Card, cx, PageHeader } from '../../components/ui'
-import { buildUrl, errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/api'
+import { downloadFile } from '../../lib/download'
 import { todayLocal } from '../../lib/format'
 import { csvToList, listToCsv, useUrlFilters } from '../../lib/urlFilters'
 import { incidentColumns } from './columns'
-import { EXPLORER_KEYS, explorerQuery, hasActiveFilters } from './explorerQuery'
+import { EXPLORER_KEYS, explorerQuery, FILTER_KEYS, hasActiveFilters, lastPage } from './explorerQuery'
 import { IncidentDrawer } from './IncidentDrawer'
 
 export function IncidentExplorerPage() {
-  const { values, set, clear } = useUrlFilters(EXPLORER_KEYS)
+  const { values, set, clear } = useUrlFilters(EXPLORER_KEYS, FILTER_KEYS)
   const { data: me } = useMe()
   const categories = useLookups('CATEGORY')
   const locations = useLookups('LOCATION')
@@ -30,6 +32,29 @@ export function IncidentExplorerPage() {
   const exportQuery = { ...query, page: undefined, pageSize: undefined }
   const period = values.from && values.to ? { from: values.from, to: values.to } : null
   const keepPage = { page: values.page }
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [truncated, setTruncated] = useState(false)
+
+  const total = list.data?.total ?? 0
+  const last = lastPage(total, query.pageSize)
+  useEffect(() => {
+    if (total > 0 && query.page > last) set({ page: String(last) })
+  }, [total, query.page, last, set])
+
+  async function runExport() {
+    setExporting(true)
+    setExportError(null)
+    setTruncated(false)
+    try {
+      const r = await downloadFile('/incidents/export.xlsx', exportQuery)
+      setTruncated(r.truncated)
+    } catch (e) {
+      setExportError(errorMessage(e))
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <>
@@ -37,9 +62,9 @@ export function IncidentExplorerPage() {
         title="Incident explorer"
         description={list.data ? `${list.data.total} incident${list.data.total === 1 ? '' : 's'} match` : 'Every incident ever recorded'}
         actions={leader && (
-          <a href={buildUrl('/incidents/export.xlsx', exportQuery)} className={filterButtonClass} download>
-            <Download className="size-4 text-slate-500" />Export Excel
-          </a>
+          <button type="button" onClick={runExport} disabled={exporting} aria-busy={exporting} className={filterButtonClass}>
+            <Download className="size-4 text-slate-500" />{exporting ? 'Exporting…' : 'Export Excel'}
+          </button>
         )}
       />
       <Card>
@@ -72,6 +97,8 @@ export function IncidentExplorerPage() {
             </button>
           </FilterBar>
           {values.shiftId && <Badge tone="blue">Showing one shift only <button type="button" className="ml-1 font-semibold" onClick={() => set({ shiftId: undefined })} aria-label="Show all shifts">×</button></Badge>}
+          {exportError && <Alert>{exportError}</Alert>}
+          {truncated && <Alert tone="warning">Only the first 10,000 rows were exported. Narrow the filters to export everything.</Alert>}
           {list.isError && <Alert>{errorMessage(list.error)}</Alert>}
           <DataTable
             columns={incidentColumns()}
