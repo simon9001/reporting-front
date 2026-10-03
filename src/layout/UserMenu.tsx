@@ -25,7 +25,7 @@ export function UserMenu({ user, onSignOut }: { user: SessionUserDto; onSignOut:
     else if (e.key === 'Home') move(0)
     else if (e.key === 'End') move(list.length - 1)
     else if (e.key === 'Escape') { e.preventDefault(); close(true) }
-    else if (e.key === 'Tab') close(false)
+    else if (e.key === 'Tab') close(true) // focus returns to the trigger; the natural Tab then continues from there
   }
   useEffect(() => {
     if (!open) return
