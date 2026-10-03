@@ -2,6 +2,7 @@ import { useMe } from '../auth/hooks'
 import { OnDutyCard } from '../components/OnDutyCard'
 import { Alert, PageHeader } from '../components/ui'
 import { useNow } from '../lib/useNow'
+import { UpcomingShifts } from './UpcomingShifts'
 
 export function MyShiftPage() {
   const { data } = useMe()
@@ -16,6 +17,7 @@ export function MyShiftPage() {
       {role === 'OFFICER' && <Alert tone="info">You are the Control Room Officer for this shift.</Alert>}
       {role === null && <Alert tone="info">You are not on the current shift. You can view records but cannot log entries for it.</Alert>}
       <OnDutyCard currentShift={currentShift} now={now} canPlan={false} />
+      {data && <UpcomingShifts userId={data.user.id} now={now} />}
     </div>
   )
 }
