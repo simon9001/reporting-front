@@ -1,63 +1,59 @@
-import { useState } from 'react'
+import type { AuditLogDto } from '@sr/shared'
 import { useAuditLog } from '../../api/audit'
-import { Alert, Button, Card, Field, Input, PageHeader, Select, Spinner, Table } from '../../components/ui'
+import { DataTable, Pagination } from '../../components/DataTable'
+import { DateRangePicker } from '../../components/DateRangePicker'
+import { EmptyState } from '../../components/EmptyState'
+import { FilterBar } from '../../components/FilterBar'
+import { Alert, Badge, Card, PageHeader, Select } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
-import { formatDateTime } from '../../lib/format'
+import { formatDateTime, todayLocal } from '../../lib/format'
+import { useUrlFilters } from '../../lib/urlFilters'
 
-const ENTITIES = ['User', 'Shift', 'ShiftDefinition', 'EscalationRule', 'SystemSetting', 'LookupItem', 'Vehicle']
+const ENTITIES = ['User', 'Shift', 'Incident', 'IncidentAttachment', 'ShiftDefinition', 'EscalationRule', 'SystemSetting', 'LookupItem', 'Vehicle']
 
 export function AuditPage() {
-  const [entity, setEntity] = useState('')
-  const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
-  const [page, setPage] = useState(1)
-  const log = useAuditLog({ entity: entity || undefined, from: from || undefined, to: to || undefined, page })
-  const pages = log.data ? Math.max(1, Math.ceil(log.data.total / log.data.pageSize)) : 1
+  const { values, set, clear } = useUrlFilters(['entityId', 'entity', 'from', 'to', 'page'])
+  const page = Number(values.page ?? 1) || 1
+  const log = useAuditLog({ entity: values.entity, from: values.from, to: values.to, page })
+  const period = values.from && values.to ? { from: values.from, to: values.to } : null
+  const items = (log.data?.items ?? []).filter((r) => !values.entityId || r.entityId === values.entityId)
 
   return (
-    <div className="space-y-6">
+    <>
       <PageHeader title="Audit log" description="Every change, sign-in and sign-out, newest first." />
       <Card>
-        <div className="grid gap-4 md:grid-cols-3">
-          <Field label="Record type">
-            <Select value={entity} onChange={(e) => { setEntity(e.target.value); setPage(1) }}>
-              <option value="">All</option>
+        <div className="space-y-4">
+          <FilterBar search={values.entityId ?? ''} onSearchChange={(v) => set({ entityId: v || undefined })} placeholder="Record number (e.g. 42)…" canClear={!!(values.entityId || values.entity || values.from)} onClear={clear}>
+            <Select aria-label="Record type" className="w-auto" value={values.entity ?? ''} onChange={(e) => set({ entity: e.target.value || undefined })}>
+              <option value="">All record types</option>
               {ENTITIES.map((e) => <option key={e} value={e}>{e}</option>)}
             </Select>
-          </Field>
-          <Field label="From"><Input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1) }} /></Field>
-          <Field label="To"><Input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1) }} /></Field>
+            <DateRangePicker value={period} onChange={(p) => set({ from: p?.from, to: p?.to })} today={todayLocal()} />
+          </FilterBar>
+          {log.isError && <Alert>{errorMessage(log.error)}</Alert>}
+          <DataTable<AuditLogDto>
+            columns={[
+              { key: 'at', header: 'When', className: 'whitespace-nowrap', render: (r) => formatDateTime(r.at) },
+              { key: 'who', header: 'Who', render: (r) => r.user?.fullName ?? 'System' },
+              { key: 'action', header: 'Action', render: (r) => <Badge>{r.action}</Badge> },
+              { key: 'record', header: 'Record', render: (r) => `${r.entity}${r.entityId ? ` #${r.entityId}` : ''}` },
+              {
+                key: 'details', header: 'Details', render: (r) => (r.before !== null || r.after !== null) && (
+                  <details>
+                    <summary className="cursor-pointer text-sm font-medium text-brand-700">Show</summary>
+                    <pre className="mt-2 max-w-xl overflow-x-auto rounded-md bg-slate-50 p-2 text-xs">{JSON.stringify({ before: r.before, after: r.after }, null, 2)}</pre>
+                  </details>
+                ),
+              },
+            ]}
+            rows={items}
+            rowKey={(r) => r.id}
+            loading={log.isPending}
+            empty={<EmptyState title="No entries match" />}
+          />
+          {log.data && log.data.total > 0 && <Pagination page={page} pageSize={log.data.pageSize} total={log.data.total} onPageChange={(p) => set({ page: String(p) })} />}
         </div>
       </Card>
-      <Card title={log.data ? `${log.data.total} entries` : 'Entries'}>
-        {log.isPending ? <Spinner /> : log.isError ? <Alert>{errorMessage(log.error)}</Alert> : (
-          <div className="space-y-3">
-            <Table head={['When', 'Who', 'Action', 'Record', 'Details']}>
-              {log.data.items.map((row) => (
-                <tr key={row.id} className="align-top">
-                  <td className="whitespace-nowrap px-3 py-2">{formatDateTime(row.at)}</td>
-                  <td className="px-3 py-2">{row.user?.fullName ?? 'System'}</td>
-                  <td className="px-3 py-2">{row.action}</td>
-                  <td className="px-3 py-2">{row.entity}{row.entityId ? ` #${row.entityId}` : ''}</td>
-                  <td className="px-3 py-2">
-                    {(row.before !== null || row.after !== null) && (
-                      <details>
-                        <summary className="cursor-pointer text-brand-600">Show</summary>
-                        <pre className="mt-2 max-w-xl overflow-x-auto rounded bg-slate-50 p-2 text-xs">{JSON.stringify({ before: row.before, after: row.after }, null, 2)}</pre>
-                      </details>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </Table>
-            <div className="flex items-center gap-2 text-sm">
-              <Button variant="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
-              <span>Page {page} of {pages}</span>
-              <Button variant="secondary" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>Next</Button>
-            </div>
-          </div>
-        )}
-      </Card>
-    </div>
+    </>
   )
 }

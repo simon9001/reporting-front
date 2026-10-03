@@ -4,10 +4,13 @@ import { useShiftDefinitions } from '../../api/config'
 import { useCopyWeek, useDeleteRosterShift, useRoster, useUpsertRoster } from '../../api/roster'
 import { useUsers } from '../../api/users'
 import { useMe } from '../../auth/hooks'
+import { Segmented } from '../../components/Segmented'
 import { Alert, Button, cx, PageHeader, Select, Spinner } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
 import { formatDate, todayLocal } from '../../lib/format'
+import { useUrlFilters } from '../../lib/urlFilters'
 import { useNow } from '../../lib/useNow'
+import { RosterListView } from './RosterListView'
 import { buildRosterRows, cellHasEnded, collectChanges, draftsOutsideView, removeSavedDrafts, type Draft, type RosterCell, weekdayLabel } from './rosterGrid'
 
 const DAYS = 14
@@ -26,6 +29,8 @@ export function RosterPage() {
   const copyWeek = useCopyWeek()
   const remove = useDeleteRosterShift()
   const now = useNow()
+  const view = useUrlFilters(['view'])
+  const isList = view.values.view === 'list'
   const [drafts, setDrafts] = useState(new Map<string, Draft>())
   const [swapRoles, setSwapRoles] = useState(true)
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
@@ -79,6 +84,7 @@ export function RosterPage() {
         description={canEdit ? 'Choose the Shift Supervisor and the Control Room Officer for each shift.' : 'Who is on duty for each shift.'}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Segmented label="View" value={isList ? 'list' : 'grid'} onChange={(v) => view.set({ view: v === 'list' ? 'list' : undefined })} options={[{ value: 'grid', label: 'Grid' }, { value: 'list', label: 'List' }]} />
             <Button variant="secondary" onClick={() => setWeekStart(addDays(weekStart, -7))}>← Previous week</Button>
             <Button variant="secondary" onClick={() => setWeekStart(weekStartMonday(todayLocal()))}>This week</Button>
             <Button variant="secondary" onClick={() => setWeekStart(addDays(weekStart, 7))}>Next week →</Button>
@@ -87,6 +93,8 @@ export function RosterPage() {
       />
       <p className="text-sm text-slate-600">{formatDate(weekStart)} – {formatDate(to)}</p>
       {message && <Alert tone={message.tone}>{message.text}</Alert>}
+      {isList ? <RosterListView rows={rows} defs={defs.data} /> : (
+        <>
       {canEdit && (
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={save} disabled={entries.length === 0 || problems.size > 0 || upsert.isPending}>Save changes</Button>
@@ -138,6 +146,8 @@ export function RosterPage() {
           </tbody>
         </table>
       </div>
+        </>
+      )}
     </div>
   )
 }

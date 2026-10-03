@@ -12,6 +12,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { IncidentExplorerPage } from './pages/incidents/IncidentExplorerPage'
 import { IncidentPage } from './pages/incidents/IncidentPage'
 import { MyShiftPage } from './pages/MyShiftPage'
+import { OfficersPage } from './pages/OfficersPage'
 import { RosterPage } from './pages/roster/RosterPage'
 
 export const router = createBrowserRouter([
@@ -29,7 +30,7 @@ export const router = createBrowserRouter([
           { path: 'incidents', element: <IncidentExplorerPage /> },
           { path: 'incidents/:ref', element: <IncidentPage /> },
           { element: <RequireRole roles={['OFFICER']} />, children: [{ path: 'my-shift', element: <MyShiftPage /> }] },
-          { element: <RequireRole roles={['DEPUTY_DIRECTOR', 'ADMIN']} />, children: [{ path: 'dashboard', element: <DashboardPage /> }] },
+          { element: <RequireRole roles={['DEPUTY_DIRECTOR', 'ADMIN']} />, children: [{ path: 'dashboard', element: <DashboardPage /> }, { path: 'officers', element: <OfficersPage /> }] },
           {
             element: <RequireRole roles={['ADMIN']} />,
             children: [

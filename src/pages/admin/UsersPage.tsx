@@ -3,13 +3,25 @@ import { createUserSchema, passwordSchema, ROLE_LABELS, ROLES, updateUserSchema,
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useCreateUser, useResetPassword, useUpdateUser, useUsers } from '../../api/users'
-import { Alert, Badge, Button, Card, Field, Input, PageHeader, Select, Spinner, Table } from '../../components/ui'
+import { DataTable } from '../../components/DataTable'
+import { EmptyState } from '../../components/EmptyState'
+import { FilterBar } from '../../components/FilterBar'
+import { Segmented } from '../../components/Segmented'
+import { Alert, Badge, Button, Card, Field, Input, PageHeader, Select } from '../../components/ui'
 import { ApiError, errorMessage } from '../../lib/api'
 import { formatDateTime } from '../../lib/format'
 import { applyServerErrors, zodFieldErrors } from '../../lib/forms'
+import { useUrlFilters } from '../../lib/urlFilters'
+import { filterUsers } from './userFilters'
 
 export function UsersPage() {
   const users = useUsers()
+  const { values, set, clear } = useUrlFilters(['q', 'role', 'status'])
+  const rows = filterUsers(users.data ?? [], {
+    q: values.q,
+    role: values.role as Role | undefined,
+    status: values.status as 'active' | 'inactive' | undefined,
+  })
   const [editing, setEditing] = useState<UserDto | null>(null)
   const [resetting, setResetting] = useState<UserDto | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -22,26 +34,37 @@ export function UsersPage() {
       {editing && <EditUserCard key={editing.id} user={editing} onDone={(result) => { setEditing(null); setNotice(result && result.futureShifts > 0 ? `${result.fullName} is still on ${result.futureShifts} upcoming shift(s). Reassign them on the Roster page.` : null) }} />}
       {resetting && <ResetPasswordCard key={resetting.id} user={resetting} onDone={() => setResetting(null)} />}
       <Card title="All users">
-        {users.isPending ? <Spinner /> : users.isError ? <Alert>{errorMessage(users.error)}</Alert> : (
-          <Table head={['Name', 'Email', 'Role', 'Status', 'Last sign-in', '']}>
-            {users.data.map((u) => (
-              <tr key={u.id}>
-                <td className="px-3 py-2 font-medium">{u.fullName}</td>
-                <td className="px-3 py-2">{u.email}</td>
-                <td className="px-3 py-2">{ROLE_LABELS[u.role]}</td>
-                <td className="px-3 py-2">
-                  {u.isActive ? <Badge tone="green">Active</Badge> : <Badge>Inactive</Badge>}{' '}
-                  {u.mustChangePassword && <Badge tone="amber">Must change password</Badge>}
-                </td>
-                <td className="px-3 py-2">{u.lastLoginAt ? formatDateTime(u.lastLoginAt) : '—'}</td>
-                <td className="whitespace-nowrap px-3 py-2 text-right">
-                  <Button variant="ghost" onClick={() => setEditing(u)}>Edit</Button>
-                  <Button variant="ghost" onClick={() => setResetting(u)}>Reset password</Button>
-                </td>
-              </tr>
-            ))}
-          </Table>
-        )}
+        <div className="space-y-4">
+          <FilterBar search={values.q ?? ''} onSearchChange={(q) => set({ q: q || undefined })} placeholder="Search name or email…" canClear={!!(values.q || values.role || values.status)} onClear={clear}>
+            <Segmented
+              label="Role"
+              value={values.role ?? ''}
+              onChange={(v) => set({ role: v || undefined })}
+              options={[{ value: '', label: 'All roles' }, ...ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] }))]}
+            />
+            <Segmented
+              label="Status"
+              value={values.status ?? ''}
+              onChange={(v) => set({ status: v || undefined })}
+              options={[{ value: '', label: 'Any' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]}
+            />
+          </FilterBar>
+          {users.isError && <Alert>{errorMessage(users.error)}</Alert>}
+          <DataTable
+            columns={[
+              { key: 'name', header: 'Name', render: (u) => <span className="font-medium text-slate-900">{u.fullName}</span> },
+              { key: 'email', header: 'Email', render: (u) => u.email },
+              { key: 'role', header: 'Role', render: (u) => ROLE_LABELS[u.role] },
+              { key: 'status', header: 'Status', render: (u) => <span className="flex flex-wrap gap-1">{u.isActive ? <Badge tone="green">Active</Badge> : <Badge>Inactive</Badge>}{u.mustChangePassword && <Badge tone="amber">Must change password</Badge>}</span> },
+              { key: 'login', header: 'Last sign-in', render: (u) => (u.lastLoginAt ? formatDateTime(u.lastLoginAt) : '—') },
+              { key: 'actions', header: '', className: 'whitespace-nowrap text-right', render: (u) => <><Button variant="ghost" onClick={() => setEditing(u)}>Edit</Button><Button variant="ghost" onClick={() => setResetting(u)}>Reset password</Button></> },
+            ]}
+            rows={rows}
+            rowKey={(u) => u.id}
+            loading={users.isPending}
+            empty={<EmptyState title="No users match" />}
+          />
+        </div>
       </Card>
     </div>
   )
