@@ -1,5 +1,5 @@
 import type { AttentionItemDto } from '@sr/shared'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useAnalytics } from '../../api/analytics'
 import { useMe } from '../../auth/hooks'
@@ -10,14 +10,15 @@ import { EmptyState, Skeleton } from '../../components/EmptyState'
 import { OnDutyCard } from '../../components/OnDutyCard'
 import { Segmented } from '../../components/Segmented'
 import { StatCard } from '../../components/StatCard'
-import { Badge, Card, PageHeader } from '../../components/ui'
+import { Alert, Badge, Card, PageHeader } from '../../components/ui'
 import { describeDelta } from '../../lib/deltas'
 import { formatDate, formatDateTime, greeting, todayLocal } from '../../lib/format'
 import { detectPreset, PRESET_LABELS, presetPeriod, PRESETS, type Period, type PeriodPreset } from '../../lib/periods'
+import { errorMessage } from '../../lib/api'
 import { useNow } from '../../lib/useNow'
 import { useUrlFilters } from '../../lib/urlFilters'
 import { IncidentDrawer } from '../incidents/IncidentDrawer'
-import { drillRange, explorerLink } from './chartData'
+import { clampRange, drillRange, explorerLink, resolvePeriod } from './chartData'
 import { CategoryBars, DayNightBars, SeverityDonut, TrendChart } from './charts'
 
 export function DashboardPage() {
@@ -26,11 +27,13 @@ export function DashboardPage() {
   const navigate = useNavigate()
   const today = todayLocal(now)
   const { values, set } = useUrlFilters(['from', 'to'])
-  const period: Period = values.from && values.to ? { from: values.from, to: values.to } : presetPeriod('month', today)
+  const { period, invalid } = resolvePeriod(values.from, values.to, presetPeriod('month', today))
   const a = useAnalytics(period)
   const [openRef, setOpenRef] = useState<string | null>(null)
   const preset = detectPreset(period, today)
   const s = a.summary.data
+  const card = <T,>(q: { data?: T; isError: boolean; error: unknown }, rows: number, render: (d: T) => ReactNode) =>
+    q.isError ? <Alert>{errorMessage(q.error)}</Alert> : q.data !== undefined ? render(q.data) : <Skeleton rows={rows} />
   const drill = (extra: Record<string, string>, range: Period = period) => navigate(explorerLink(range, extra))
 
   const attentionColumns = [
@@ -61,9 +64,11 @@ export function DashboardPage() {
         }
       />
 
+      {invalid && <p role="status" className="text-sm text-amber-700">Showing this month — choose a period of at most one year.</p>}
+
       <div className="grid gap-4 xl:grid-cols-[1.3fr_repeat(4,1fr)]">
         <OnDutyCard currentShift={me?.currentShift ?? null} now={now} canPlan />
-        <StatCard label="Total incidents" value={s?.total.current ?? '—'} delta={s ? describeDelta(s.total, 'percent', 'lower') : null} hint="vs previous" onClick={() => drill({})} />
+        <StatCard label="Total incidents" value={s?.total.current ?? '—'} delta={s ? describeDelta(s.total, 'percent', 'lower') : null} hint={s && describeDelta(s.total, 'percent', 'lower') ? 'vs previous' : undefined} onClick={() => drill({})} />
         <StatCard
           label="Open critical / high"
           value={s?.openCriticalHigh ?? '—'}
@@ -76,21 +81,24 @@ export function DashboardPage() {
 
       <div className="grid gap-4 xl:grid-cols-3">
         <Card title="Incidents over time" className="xl:col-span-2">
-          {a.trend.data ? <TrendChart data={a.trend.data} onBucketClick={(b) => drill({}, drillRange(b, a.trend.data!.granularity))} /> : <Skeleton rows={6} />}
+          {card(a.trend, 6, (t) => {
+            const range = (b: string) => clampRange(drillRange(b, t.granularity), period)
+            return <TrendChart data={t} onBucketClick={(b) => drill({}, range(b))} bucketHref={(b) => explorerLink(range(b))} />
+          })}
         </Card>
         <Card title="By severity">
-          {a.severity.data ? <SeverityDonut data={a.severity.data} onSliceClick={(sev) => drill({ severity: sev })} /> : <Skeleton rows={4} />}
+          {card(a.severity, 4, (d) => <SeverityDonut data={d} onSliceClick={(sev) => drill({ severity: sev })} />)}
         </Card>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <Card title="Most occurring categories">
-          {a.categories.data ? <CategoryBars data={a.categories.data} onBarClick={(id) => drill({ categoryId: id })} /> : <Skeleton rows={4} />}
+          {card(a.categories, 4, (d) => <CategoryBars data={d} onBarClick={(id) => drill({ categoryId: id })} barHref={(id) => explorerLink(period, { categoryId: id })} />)}
         </Card>
         <Card title="Hotspot locations">
-          {!a.hotspots.data ? <Skeleton rows={4} /> : a.hotspots.data.length === 0 ? <EmptyState title="No incidents" /> : (
+          {card(a.hotspots, 4, (hs) => hs.length === 0 ? <EmptyState title="No incidents" /> : (
             <ul className="divide-y divide-slate-100">
-              {a.hotspots.data.map((h) => (
+              {hs.map((h) => (
                 <li key={h.locationId}>
                   <button type="button" onClick={() => drill({ locationId: String(h.locationId) })} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm hover:bg-brand-50/50">
                     <span><span className="font-medium text-slate-800">{h.location}</span>{h.topCategory && <span className="block text-xs text-slate-500">Mostly {h.topCategory}</span>}</span>
@@ -99,15 +107,15 @@ export function DashboardPage() {
                 </li>
               ))}
             </ul>
-          )}
+          ))}
         </Card>
         <Card title="Day vs Night shift">
-          {a.dayNight.data ? <DayNightBars data={a.dayNight.data} /> : <Skeleton rows={4} />}
+          {card(a.dayNight, 4, (d) => <DayNightBars data={d} />)}
         </Card>
       </div>
 
       <Card title="Needs your attention" actions={<Link to="/incidents?severity=CRITICAL,HIGH&status=OPEN,IN_PROGRESS,MONITORING" className="text-sm font-medium text-brand-700 hover:underline">All open critical / high</Link>}>
-        <DataTable
+        {a.attention.isError ? <Alert>{errorMessage(a.attention.error)}</Alert> : <DataTable
           columns={attentionColumns}
           rows={a.attention.data ?? []}
           rowKey={(i) => i.id}
@@ -115,7 +123,7 @@ export function DashboardPage() {
           onRowClick={(i) => setOpenRef(i.ref)}
           rowLabel={(i) => `Open ${i.ref}`}
           empty={<EmptyState title="Nothing needs attention" description="No open critical or high incidents." />}
-        />
+        />}
       </Card>
 
       <IncidentDrawer idOrRef={openRef} onClose={() => setOpenRef(null)} />

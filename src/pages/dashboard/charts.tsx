@@ -1,18 +1,31 @@
 import type { CountByDto, DayNightDto, IncidentTrendDto, Severity } from '@sr/shared'
+import type { ReactNode } from 'react'
+import { Link } from 'react-router'
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { SEVERITY_COLORS } from '../../components/badges'
 import { EmptyState } from '../../components/EmptyState'
 import { bucketLabel, weekLabel } from './chartData'
 
 const axis = { fontSize: 11, fill: '#6b7280' }
+function SrTable({ caption, head, rows }: { caption: string; head: string[]; rows: ReactNode[][] }) {
+  return (
+    <table className="sr-only">
+      <caption>{caption}</caption>
+      <thead><tr>{head.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
+      <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => (j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j}>{c}</td>))}</tr>)}</tbody>
+    </table>
+  )
+}
+
 const tooltipStyle = { borderRadius: 8, border: '1px solid #eef0f2', fontSize: 12 }
 
-export function TrendChart({ data, onBucketClick }: { data: IncidentTrendDto; onBucketClick: (bucket: string) => void }) {
+export function TrendChart({ data, onBucketClick, bucketHref }: { data: IncidentTrendDto; onBucketClick: (bucket: string) => void; bucketHref: (bucket: string) => string }) {
   if (data.points.every((p) => p.total === 0)) return <EmptyState title="No incidents in this period" />
   const rows = data.points.map((p) => ({ ...p, label: bucketLabel(p.bucket, data.granularity) }))
   const click = (_: unknown, index: number) => { const p = rows[index]; if (p) onBucketClick(p.bucket) }
   return (
-    <div className="h-64" role="img" aria-label="Incidents over time by severity">
+    <>
+    <div className="h-64" role="img" aria-label="Incidents over time by severity (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="#f1f5f9" />
@@ -27,6 +40,12 @@ export function TrendChart({ data, onBucketClick }: { data: IncidentTrendDto; on
         </ComposedChart>
       </ResponsiveContainer>
     </div>
+    <SrTable
+      caption="Incidents over time by severity"
+      head={['Period', 'Low', 'Medium', 'High', 'Critical', 'Total']}
+      rows={rows.map((r) => [<Link key="l" to={bucketHref(r.bucket)}>{r.label}</Link>, r.LOW, r.MEDIUM, r.HIGH, r.CRITICAL, r.total])}
+    />
+    </>
   )
 }
 
@@ -61,16 +80,18 @@ export function SeverityDonut({ data, onSliceClick }: { data: CountByDto[]; onSl
           </li>
         ))}
       </ul>
+      <SrTable caption="Incidents by severity" head={['Severity', 'Incidents']} rows={data.map((d) => [d.label, d.count])} />
     </div>
   )
 }
 
 const TEALS = ['#0f766e', '#14b8a6', '#2dd4bf', '#5eead4', '#99f6e4', '#ccfbf1']
 
-export function CategoryBars({ data, onBarClick }: { data: CountByDto[]; onBarClick: (key: string) => void }) {
+export function CategoryBars({ data, onBarClick, barHref }: { data: CountByDto[]; onBarClick: (key: string) => void; barHref: (key: string) => string }) {
   if (data.length === 0) return <EmptyState title="No incidents" />
   return (
-    <div style={{ height: Math.max(120, data.length * 34) }} role="img" aria-label="Most occurring incident categories">
+    <>
+    <div style={{ height: Math.max(120, data.length * 34) }} role="img" aria-label="Most occurring incident categories (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
           <XAxis type="number" hide allowDecimals={false} />
@@ -83,6 +104,8 @@ export function CategoryBars({ data, onBarClick }: { data: CountByDto[]; onBarCl
         </BarChart>
       </ResponsiveContainer>
     </div>
+    <SrTable caption="Most occurring incident categories" head={['Category', 'Incidents']} rows={data.map((d) => [<Link key="l" to={barHref(d.key)}>{d.label}</Link>, d.count])} />
+    </>
   )
 }
 
@@ -91,7 +114,8 @@ export function DayNightBars({ data }: { data: DayNightDto }) {
   const rows = data.points.map((p) => ({ label: weekLabel(p.weekStart), ...p.counts }))
   const colors = ['#5eead4', '#0f766e', '#14b8a6']
   return (
-    <div className="h-48" role="img" aria-label="Incidents per week by shift">
+    <>
+    <div className="h-48" role="img" aria-label="Incidents per week by shift (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="#f1f5f9" />
@@ -103,5 +127,11 @@ export function DayNightBars({ data }: { data: DayNightDto }) {
         </BarChart>
       </ResponsiveContainer>
     </div>
+    <SrTable
+      caption="Incidents per week by shift"
+      head={['Week', ...data.shifts.map((x) => x.name)]}
+      rows={rows.map((r) => [r.label, ...data.shifts.map((x) => (r as Record<string, string | number>)[x.code] ?? 0)])}
+    />
+    </>
   )
 }
