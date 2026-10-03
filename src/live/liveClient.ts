@@ -7,8 +7,8 @@ export const TOPIC_QUERY_KEYS: Record<LiveTopic, readonly (readonly string[])[]>
   incidents: [['incidents'], ['incident'], ['analytics'], ['search']],
   roster: [['roster'], ['me']],
   shift: [['me'], ['roster'], ['incidents'], ['analytics']],
-  users: [['users'], ['search']],
-  config: [['config']],
+  users: [['users'], ['search'], ['roster'], ['me']],
+  config: [['config'], ['me']],
   audit: [['audit']],
 }
 
@@ -29,13 +29,22 @@ export function queryKeysForTopics(topics: readonly string[]): (readonly string[
 }
 
 export interface EventSourceLike {
+  readyState?: number
   onopen: ((e: Event) => void) | null
   onerror: ((e: Event) => void) | null
   addEventListener(type: string, fn: (e: MessageEvent) => void): void
   close(): void
 }
 
-/** Opens the SSE stream. The browser reconnects by itself; on every re-open we ask the caller to catch up. */
+const CLOSED = 2
+const BASE_DELAY_MS = 1000
+const MAX_DELAY_MS = 30000
+
+/**
+ * Opens the SSE stream. The browser reconnects by itself while the stream is merely interrupted; if it gives up
+ * (readyState CLOSED) we re-create the source after a capped exponential backoff. Whenever a stream opens after an
+ * earlier open or failure, the caller is asked to catch up.
+ */
 export function connectLive(opts: {
   url: string
   create?: (url: string) => EventSourceLike
@@ -44,22 +53,49 @@ export function connectLive(opts: {
   onReconnected: () => void
 }): () => void {
   const create = opts.create ?? ((url: string) => new EventSource(url, { withCredentials: true }) as unknown as EventSourceLike)
-  let openedBefore = false
-  opts.onStatus('connecting')
-  const es = create(opts.url)
-  es.onopen = () => {
-    opts.onStatus('live')
-    if (openedBefore) opts.onReconnected()
-    openedBefore = true
-  }
-  es.onerror = () => opts.onStatus('reconnecting')
-  es.addEventListener('change', (e) => {
-    try {
-      const { topics } = JSON.parse(e.data) as { topics: string[] }
-      if (Array.isArray(topics)) opts.onTopics(topics)
-    } catch {
-      // ignore malformed messages
+  let needsCatchUp = false
+  let delay = BASE_DELAY_MS
+  let timer: ReturnType<typeof setTimeout> | null = null
+  let current: EventSourceLike | null = null
+  let stopped = false
+
+  const open = () => {
+    const es = create(opts.url)
+    current = es
+    es.onopen = () => {
+      delay = BASE_DELAY_MS
+      opts.onStatus('live')
+      if (needsCatchUp) opts.onReconnected()
+      needsCatchUp = true
     }
-  })
-  return () => es.close()
+    es.onerror = () => {
+      needsCatchUp = true
+      opts.onStatus('reconnecting')
+      if (es.readyState === CLOSED && !stopped) {
+        es.close()
+        timer = setTimeout(() => {
+          timer = null
+          if (!stopped) open()
+        }, delay)
+        delay = Math.min(delay * 2, MAX_DELAY_MS)
+      }
+    }
+    es.addEventListener('change', (e) => {
+      try {
+        const { topics } = JSON.parse(e.data) as { topics: string[] }
+        if (Array.isArray(topics)) opts.onTopics(topics)
+      } catch {
+        // ignore malformed messages
+      }
+    })
+  }
+
+  opts.onStatus('connecting')
+  open()
+  return () => {
+    stopped = true
+    if (timer) clearTimeout(timer)
+    timer = null
+    current?.close()
+  }
 }

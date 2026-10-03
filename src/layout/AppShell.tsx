@@ -94,7 +94,7 @@ export function AppShell() {
           </main>
         </div>
       </div>
-      <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} role={user.role} />
+      {searchOpen && <CommandPalette onClose={() => setSearchOpen(false)} role={user.role} />}
     </LiveProvider>
   )
 }
