@@ -9,7 +9,7 @@ const defs: ShiftDefinitionDto[] = [
 const shift: ShiftDto = {
   id: 9, shiftDate: '2030-01-07', shiftCode: 'DAY', shiftName: 'Day',
   startsAt: '2030-01-07T05:00:00.000Z', endsAt: '2030-01-07T14:00:00.000Z',
-  supervisor: { id: 1, fullName: 'Antony Ochieng' }, officer: { id: 2, fullName: 'Simon Gatungo' },
+  supervisor: { id: 1, fullName: 'Antony Ochieng', rosterable: true }, officer: { id: 2, fullName: 'Simon Gatungo', rosterable: true },
 }
 
 describe('roster grid', () => {

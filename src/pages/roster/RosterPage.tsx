@@ -1,4 +1,4 @@
-import { addDays, weekStartMonday, type PersonRef, type ShiftDefinitionDto, type UserDto } from '@sr/shared'
+import { addDays, weekStartMonday, type RosterPersonRef, type ShiftDefinitionDto, type UserDto } from '@sr/shared'
 import { useState } from 'react'
 import { useShiftDefinitions } from '../../api/config'
 import { useCopyWeek, useDeleteRosterShift, useRoster, useUpsertRoster } from '../../api/roster'
@@ -146,11 +146,16 @@ function ReadOnlyCell({ cell }: { cell: RosterCell }) {
     <div className="space-y-0.5">
       <div><span className="text-xs text-slate-500">Supervisor </span>{cell.shift.supervisor.fullName}</div>
       <div><span className="text-xs text-slate-500">Officer </span>{cell.shift.officer.fullName}</div>
+      <InactiveNotes people={[cell.shift.supervisor, cell.shift.officer]} />
     </div>
   )
 }
 
-function PersonSelect({ label, value, people, onChange }: { label: string; value: number | null; people: PersonRef[]; onChange: (id: number | null) => void }) {
+function InactiveNotes({ people }: { people: RosterPersonRef[] }) {
+  return <>{people.filter((p) => !p.rosterable).map((p) => <p key={p.id} className="text-xs text-red-600">{p.fullName} is inactive – reassign</p>)}</>
+}
+
+function PersonSelect({ label, value, people, onChange }: { label: string; value: number | null; people: { id: number; fullName: string }[]; onChange: (id: number | null) => void }) {
   return (
     <Select aria-label={label} value={value ?? ''} onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)} className="py-1">
       <option value="">{label}…</option>
@@ -173,7 +178,7 @@ function EditableCell(props: {
   const supervisorId = draft?.supervisorId ?? cell.shift?.supervisor.id ?? null
   const officerId = draft?.officerId ?? cell.shift?.officer.id ?? null
   // Keep people already on the shift selectable even if they were deactivated since.
-  const people: PersonRef[] = [...officers]
+  const people: { id: number; fullName: string }[] = [...officers]
   for (const p of [cell.shift?.supervisor, cell.shift?.officer]) if (p && !people.some((x) => x.id === p.id)) people.push(p)
 
   return (
@@ -181,6 +186,7 @@ function EditableCell(props: {
       <PersonSelect label="Supervisor" value={supervisorId} people={people} onChange={(id) => onChange({ supervisorId: id })} />
       <PersonSelect label="Officer" value={officerId} people={people} onChange={(id) => onChange({ officerId: id })} />
       {problem && <p className="text-xs text-red-600">{problem}</p>}
+      {cell.shift && <InactiveNotes people={[cell.shift.supervisor, cell.shift.officer].filter((p) => p.id === supervisorId || p.id === officerId)} />}
       {canDelete && !draft && (
         <button type="button" className="text-xs text-red-700 underline" onClick={onDelete}>Remove shift</button>
       )}

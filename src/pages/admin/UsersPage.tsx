@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createUserSchema, passwordSchema, ROLE_LABELS, ROLES, updateUserSchema, type CreateUserInput, type Role, type UserDto } from '@sr/shared'
+import { createUserSchema, passwordSchema, ROLE_LABELS, ROLES, updateUserSchema, type CreateUserInput, type Role, type UpdateUserResult, type UserDto } from '@sr/shared'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useCreateUser, useResetPassword, useUpdateUser, useUsers } from '../../api/users'
@@ -12,12 +12,14 @@ export function UsersPage() {
   const users = useUsers()
   const [editing, setEditing] = useState<UserDto | null>(null)
   const [resetting, setResetting] = useState<UserDto | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   return (
     <div className="space-y-6">
       <PageHeader title="Users" description="Officers, the Deputy Director and administrators who can sign in." />
       <CreateUserCard />
-      {editing && <EditUserCard key={editing.id} user={editing} onDone={() => setEditing(null)} />}
+      {notice && <Alert tone="warning">{notice}</Alert>}
+      {editing && <EditUserCard key={editing.id} user={editing} onDone={(result) => { setEditing(null); setNotice(result && result.futureShifts > 0 ? `${result.fullName} is still on ${result.futureShifts} upcoming shift(s). Reassign them on the Roster page.` : null) }} />}
       {resetting && <ResetPasswordCard key={resetting.id} user={resetting} onDone={() => setResetting(null)} />}
       <Card title="All users">
         {users.isPending ? <Spinner /> : users.isError ? <Alert>{errorMessage(users.error)}</Alert> : (
@@ -86,7 +88,7 @@ function CreateUserCard() {
   )
 }
 
-function EditUserCard({ user, onDone }: { user: UserDto; onDone: () => void }) {
+function EditUserCard({ user, onDone }: { user: UserDto; onDone: (result?: UpdateUserResult) => void }) {
   const update = useUpdateUser()
   const [fullName, setFullName] = useState(user.fullName)
   const [email, setEmail] = useState(user.email)
@@ -98,8 +100,7 @@ function EditUserCard({ user, onDone }: { user: UserDto; onDone: () => void }) {
     const parsed = updateUserSchema.safeParse({ fullName, email, role, isActive })
     if (!parsed.success) return setErrors(zodFieldErrors(parsed.error))
     try {
-      await update.mutateAsync({ id: user.id, ...parsed.data })
-      onDone()
+      onDone(await update.mutateAsync({ id: user.id, ...parsed.data }))
     } catch (err) {
       setErrors({ ...(err instanceof ApiError ? err.fields : undefined), _form: errorMessage(err) })
     }
@@ -121,7 +122,7 @@ function EditUserCard({ user, onDone }: { user: UserDto; onDone: () => void }) {
         </label>
         <div className="flex gap-2 md:col-span-2">
           <Button onClick={save} disabled={update.isPending}>Save</Button>
-          <Button variant="secondary" onClick={onDone}>Cancel</Button>
+          <Button variant="secondary" onClick={() => onDone()}>Cancel</Button>
         </div>
       </div>
     </Card>

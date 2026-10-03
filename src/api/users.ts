@@ -1,4 +1,4 @@
-import type { CreateUserInput, Role, UpdateUserInput, UserDto } from '@sr/shared'
+import type { CreateUserInput, Role, UpdateUserInput, UpdateUserResult, UserDto } from '@sr/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 
@@ -23,7 +23,7 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, ...body }: UpdateUserInput & { id: number }) => api<UserDto>(`/users/${id}`, { method: 'PATCH', body }),
+    mutationFn: ({ id, ...body }: UpdateUserInput & { id: number }) => api<UpdateUserResult>(`/users/${id}`, { method: 'PATCH', body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: usersKey }),
   })
 }
