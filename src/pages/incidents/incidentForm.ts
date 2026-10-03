@@ -68,3 +68,21 @@ export function escalationHint(rule: EscalationRuleDto | undefined, severity: Se
   if (!rule.isRequired) return `${label}: escalation not required`
   return `${label}: escalate to ${rule.notifyWho ?? 'the responsible team'}${rule.withinMinutes ? ` within ${rule.withinMinutes} min` : ''}`
 }
+
+export const SNAPSHOT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+
+type FileLike = Pick<File, 'name' | 'size' | 'type' | 'lastModified'>
+
+/** Adds picked files to the pending list: skips duplicates, rejects bad type/size, and enforces the per-incident cap. */
+export function mergeSnapshots<F extends FileLike>(existingCount: number, pending: F[], incoming: F[], maxCount: number, maxBytes: number): { files: F[]; problems: string[] } {
+  const files = [...pending]
+  const problems: string[] = []
+  for (const f of incoming) {
+    if (files.some((p) => p.name === f.name && p.size === f.size && p.lastModified === f.lastModified)) continue
+    if (f.size > maxBytes) problems.push(`${f.name}: larger than 10 MB`)
+    else if (!SNAPSHOT_TYPES.includes(f.type)) problems.push(`${f.name}: not a JPEG, PNG, WebP or PDF file`)
+    else if (existingCount + files.length >= maxCount) problems.push(`${f.name}: an incident can have at most ${maxCount} snapshots`)
+    else files.push(f)
+  }
+  return { files, problems }
+}

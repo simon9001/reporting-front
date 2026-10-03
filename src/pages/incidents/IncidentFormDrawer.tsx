@@ -1,9 +1,9 @@
 import {
-  INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, incidentInputSchema, MAX_ATTACHMENT_BYTES, SEVERITIES, SEVERITY_LABELS,
+  INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, incidentInputSchema, MAX_ATTACHMENT_BYTES, MAX_ATTACHMENTS_PER_INCIDENT, SEVERITIES, SEVERITY_LABELS,
   type IncidentDto, type IncidentStatus, type Severity,
 } from '@sr/shared'
 import { ImagePlus, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useEscalationRules, useLookups } from '../../api/config'
 import { useSaveIncident, useUploadSnapshots } from '../../api/incidents'
 import { Drawer } from '../../components/Drawer'
@@ -11,16 +11,19 @@ import { Segmented } from '../../components/Segmented'
 import { Alert, Button, Field, Input, Select, Textarea } from '../../components/ui'
 import { ApiError, errorMessage } from '../../lib/api'
 import { zodFieldErrors } from '../../lib/forms'
-import { emptyForm, escalationHint, formFromIncident, formToInput, isResolved, type IncidentFormState } from './incidentForm'
+import { emptyForm, escalationHint, formFromIncident, formToInput, isResolved, mergeSnapshots, type IncidentFormState } from './incidentForm'
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,application/pdf'
 
-export function IncidentFormDrawer({ open, onClose, incident, onSaved }: {
+export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSaved }: {
   open: boolean
   onClose: () => void
   incident?: IncidentDto
   onSaved: (dto: IncidentDto) => void
 }) {
+  // After a create whose uploads failed, the form switches to editing the saved incident so it can never POST twice.
+  const [savedOnce, setSavedOnce] = useState<IncidentDto | null>(null)
+  const incident = savedOnce ?? incidentProp
   const locations = useLookups('LOCATION')
   const categories = useLookups('CATEGORY')
   const rules = useEscalationRules()
@@ -30,35 +33,30 @@ export function IncidentFormDrawer({ open, onClose, incident, onSaved }: {
   const [files, setFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [notice, setNotice] = useState<string | null>(null)
-  const loadedAt = useRef<string | null>(null)
+  const [loadedAt, setLoadedAt] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
-    setForm(incident ? formFromIncident(incident) : emptyForm(new Date().toISOString()))
+    setForm(incidentProp ? formFromIncident(incidentProp) : emptyForm(new Date().toISOString()))
     setFiles([])
     setErrors({})
     setNotice(null)
-    loadedAt.current = incident?.updatedAt ?? null
+    setSavedOnce(null)
+    setLoadedAt(incidentProp?.updatedAt ?? null)
     // reset only when the drawer opens
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  const changedUnderneath = !!incident && !!loadedAt.current && incident.updatedAt !== loadedAt.current
+  const changedUnderneath = !!incidentProp && !!loadedAt && incidentProp.updatedAt !== loadedAt
   const set = <K extends keyof IncidentFormState>(k: K, v: IncidentFormState[K]) => setForm((f) => ({ ...f, [k]: v }))
   const activeOrCurrent = (items: { id: number; value: string; isActive: boolean }[] | undefined, current: string) =>
     (items ?? []).filter((x) => x.isActive || String(x.id) === current)
 
   const addFiles = (list: FileList | null) => {
     if (!list) return
-    const next = [...files]
-    const problems: Record<string, string> = {}
-    for (const f of Array.from(list)) {
-      if (f.size > MAX_ATTACHMENT_BYTES) problems[f.name] = 'Larger than 10 MB'
-      else if (!ACCEPT.split(',').includes(f.type)) problems[f.name] = 'Not a JPEG, PNG, WebP or PDF file'
-      else next.push(f)
-    }
+    const { files: next, problems } = mergeSnapshots(incident?.attachments.length ?? 0, files, Array.from(list), MAX_ATTACHMENTS_PER_INCIDENT, MAX_ATTACHMENT_BYTES)
     setFiles(next)
-    setErrors((e) => ({ ...e, files: Object.entries(problems).map(([n, m]) => `${n}: ${m}`).join(' · ') }))
+    setErrors((e) => ({ ...e, files: problems.join(' · ') }))
   }
 
   const submit = async () => {
@@ -79,9 +77,12 @@ export function IncidentFormDrawer({ open, onClose, incident, onSaved }: {
       } catch (err) {
         const detail = err instanceof ApiError && err.fields ? Object.entries(err.fields).map(([n, m]) => `${n}: ${m}`).join(' · ') : errorMessage(err)
         setFiles([])
+        if (!incidentProp) setSavedOnce(saved)
+        setLoadedAt(saved.updatedAt)
         return setNotice(`${saved.ref} was saved, but some snapshots were not added — ${detail}. You can add them again from the incident.`)
       }
     }
+    setLoadedAt(saved.updatedAt)
     onSaved(saved)
   }
 
@@ -105,7 +106,7 @@ export function IncidentFormDrawer({ open, onClose, incident, onSaved }: {
         {changedUnderneath && (
           <Alert tone="warning">
             Someone else updated this incident while you were editing.{' '}
-            <button type="button" className="font-semibold underline" onClick={() => { setForm(formFromIncident(incident)); loadedAt.current = incident.updatedAt }}>Load latest</button>
+            <button type="button" className="font-semibold underline" onClick={() => { if (incidentProp) { setForm(formFromIncident(incidentProp)); setLoadedAt(incidentProp.updatedAt) } }}>Load latest</button>
           </Alert>
         )}
         {errors._form && <Alert>{errors._form}</Alert>}
@@ -182,7 +183,7 @@ export function IncidentFormDrawer({ open, onClose, incident, onSaved }: {
           <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600 hover:border-brand-300 hover:bg-brand-50/40">
             <ImagePlus className="size-5 text-slate-400" aria-hidden />
             <span>Add snapshots <span className="text-slate-400">(photos, screenshots or PDF · up to 10 MB each)</span></span>
-            <input type="file" multiple accept={ACCEPT} capture="environment" className="sr-only" aria-label="Add snapshots" onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
+            <input type="file" multiple accept={ACCEPT} className="sr-only" aria-label="Add snapshots" onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
           </label>
           {errors.files && <p role="alert" className="text-xs font-medium text-red-600">{errors.files}</p>}
           {files.length > 0 && (

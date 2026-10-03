@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { pushLayer } from './layers'
 import { cx, IconButton } from './ui'
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
@@ -19,10 +20,10 @@ export function Drawer({ open, onClose, title, children, footer, wide }: {
   useEffect(() => {
     if (!open) return
     const previous = document.activeElement as HTMLElement | null
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const layer = pushLayer()
     panel.current?.focus()
     const onKey = (e: KeyboardEvent) => {
+      if (!layer.isTop()) return
       if (e.key === 'Escape') {
         closeRef.current()
         return
@@ -51,7 +52,7 @@ export function Drawer({ open, onClose, title, children, footer, wide }: {
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = previousOverflow
+      layer.pop()
       previous?.focus()
     }
   }, [open])

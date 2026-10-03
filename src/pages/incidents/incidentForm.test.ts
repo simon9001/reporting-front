@@ -1,6 +1,6 @@
 import type { IncidentDto } from '@sr/shared'
 import { describe, expect, it } from 'vitest'
-import { emptyForm, escalationHint, formFromIncident, formToInput } from './incidentForm'
+import { emptyForm, escalationHint, formFromIncident, formToInput, mergeSnapshots } from './incidentForm'
 
 describe('incident form mapping', () => {
   it('starts at "now" in Nairobi wall time with sensible defaults', () => {
@@ -37,5 +37,24 @@ describe('incident form mapping', () => {
     expect(escalationHint({ severity: 'HIGH', isRequired: true, notifyWho: 'ICT Officer', withinMinutes: 30 }, 'HIGH')).toBe('High: escalate to ICT Officer within 30 min')
     expect(escalationHint({ severity: 'LOW', isRequired: false, notifyWho: null, withinMinutes: null }, 'LOW')).toBe('Low: escalation not required')
     expect(escalationHint(undefined, '')).toBeNull()
+  })
+})
+
+describe('mergeSnapshots', () => {
+  const f = (name: string, size = 100, type = 'image/png', lastModified = 1) => ({ name, size, type, lastModified })
+  it('skips duplicates by name, size and modified time', () => {
+    const r = mergeSnapshots(0, [f('a.png')], [f('a.png'), f('a.png', 100, 'image/png', 2)], 10, 1000)
+    expect(r.files).toHaveLength(2)
+    expect(r.problems).toEqual([])
+  })
+  it('enforces the per-incident cap including existing attachments', () => {
+    const r = mergeSnapshots(9, [], [f('a.png'), f('b.png')], 10, 1000)
+    expect(r.files.map((x) => x.name)).toEqual(['a.png'])
+    expect(r.problems[0]).toContain('at most 10')
+  })
+  it('rejects oversize and unsupported files', () => {
+    const r = mergeSnapshots(0, [], [f('big.png', 5000), f('x.exe', 1, 'application/x-msdownload')], 10, 1000)
+    expect(r.files).toEqual([])
+    expect(r.problems).toHaveLength(2)
   })
 })
