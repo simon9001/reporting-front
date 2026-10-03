@@ -2,7 +2,7 @@ import type { AuditLogDto, Paged } from '@sr/shared'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
 
-export interface AuditParams { entity?: string; from?: string; to?: string; page: number }
+export interface AuditParams { entity?: string; entityId?: string; from?: string; to?: string; page: number }
 
 export const useAuditLog = (params: AuditParams) =>
   useQuery({

@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 export function FilterBar({ search, onSearchChange, placeholder = 'Search…', children, canClear, onClear, actions }: {
   search: string
@@ -11,12 +11,14 @@ export function FilterBar({ search, onSearchChange, placeholder = 'Search…', c
   actions?: ReactNode
 }) {
   const [text, setText] = useState(search)
+  const onChangeRef = useRef(onSearchChange)
+  useEffect(() => { onChangeRef.current = onSearchChange })
   useEffect(() => setText(search), [search])
   useEffect(() => {
     if (text === search) return
-    const t = setTimeout(() => onSearchChange(text), 300)
+    const t = setTimeout(() => onChangeRef.current(text), 300)
     return () => clearTimeout(t)
-  }, [text, search, onSearchChange])
+  }, [text, search])
   return (
     <div className="flex flex-wrap items-center gap-2">
       <label className="relative min-w-56 flex-1">

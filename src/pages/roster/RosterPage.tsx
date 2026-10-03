@@ -93,6 +93,15 @@ export function RosterPage() {
       />
       <p className="text-sm text-slate-600">{formatDate(weekStart)} – {formatDate(to)}</p>
       {message && <Alert tone={message.tone}>{message.text}</Alert>}
+      {isList && canEdit && drafts.size > 0 && (
+        <Alert tone="warning">
+          <span className="flex flex-wrap items-center gap-3">
+            You have unsaved roster changes ({drafts.size}). They are kept while you browse the list.
+            <Button onClick={save} disabled={entries.length === 0 || problems.size > 0 || upsert.isPending}>Save changes</Button>
+            <Button variant="secondary" onClick={() => view.set({ view: undefined })}>Back to Grid</Button>
+          </span>
+        </Alert>
+      )}
       {isList ? <RosterListView rows={rows} defs={defs.data} /> : (
         <>
       {canEdit && (
