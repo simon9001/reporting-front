@@ -9,11 +9,13 @@ import { bucketLabel, weekLabel } from './chartData'
 const axis = { fontSize: 11, fill: '#6b7280' }
 function SrTable({ caption, head, rows }: { caption: string; head: string[]; rows: ReactNode[][] }) {
   return (
-    <table className="sr-only">
-      <caption>{caption}</caption>
+    <div className="sr-only focus-within:not-sr-only focus-within:mt-3 focus-within:overflow-x-auto focus-within:rounded-lg focus-within:border focus-within:border-line focus-within:bg-white focus-within:p-2 focus-within:text-xs">
+    <table className="w-full text-left [&_a]:rounded [&_a]:text-brand-700 [&_a]:underline [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-2 [&_a]:focus-visible:outline-brand-600">
+      <caption className="mb-1 text-left font-medium">{caption}</caption>
       <thead><tr>{head.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
       <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => (j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j}>{c}</td>))}</tr>)}</tbody>
     </table>
+    </div>
   )
 }
 

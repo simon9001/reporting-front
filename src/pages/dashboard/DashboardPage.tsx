@@ -66,6 +66,8 @@ export function DashboardPage() {
 
       {invalid && <p role="status" className="text-sm text-amber-700">Showing this month — choose a period of at most one year.</p>}
 
+      {a.summary.isError && <Alert>{errorMessage(a.summary.error)}</Alert>}
+
       <div className="grid gap-4 xl:grid-cols-[1.3fr_repeat(4,1fr)]">
         <OnDutyCard currentShift={me?.currentShift ?? null} now={now} canPlan />
         <StatCard label="Total incidents" value={s?.total.current ?? '—'} delta={s ? describeDelta(s.total, 'percent', 'lower') : null} hint={s && describeDelta(s.total, 'percent', 'lower') ? 'vs previous' : undefined} onClick={() => drill({})} />
