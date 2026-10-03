@@ -13,10 +13,8 @@ export function MyShiftPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="My Shift" />
-      {role === 'SUPERVISOR' && <Alert tone="success">You are the Shift Supervisor for this shift.</Alert>}
-      {role === 'OFFICER' && <Alert tone="info">You are the Control Room Officer for this shift.</Alert>}
       {role === null && <Alert tone="info">You are not on the current shift. You can view records but cannot log entries for it.</Alert>}
-      <OnDutyCard currentShift={currentShift} now={now} canPlan={false} />
+      <OnDutyCard currentShift={currentShift} now={now} canPlan={false} myRole={role} />
       {data && <UpcomingShifts userId={data.user.id} now={now} />}
     </div>
   )

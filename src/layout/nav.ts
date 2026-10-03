@@ -1,16 +1,35 @@
 import type { Role } from '@sr/shared'
+import { CalendarDays, ClipboardList, LayoutDashboard, List, ScrollText, Search, Settings, Truck, UserCog, Users, type LucideIcon } from 'lucide-react'
 
-export interface NavItem { to: string; label: string; roles: Role[] }
+export interface NavItem { to: string; label: string; icon: LucideIcon; roles: Role[] }
+export interface NavGroup { label: string | null; items: NavItem[] }
 
-export const NAV_ITEMS: NavItem[] = [
-  { to: '/my-shift', label: 'My Shift', roles: ['OFFICER'] },
-  { to: '/dashboard', label: 'Dashboard', roles: ['DEPUTY_DIRECTOR', 'ADMIN'] },
-  { to: '/roster', label: 'Roster', roles: ['OFFICER', 'DEPUTY_DIRECTOR', 'ADMIN'] },
-  { to: '/admin/users', label: 'Users', roles: ['ADMIN'] },
-  { to: '/admin/settings', label: 'Settings', roles: ['ADMIN'] },
-  { to: '/admin/lookups', label: 'Lists', roles: ['ADMIN'] },
-  { to: '/admin/vehicles', label: 'Vehicles', roles: ['ADMIN'] },
-  { to: '/admin/audit', label: 'Audit log', roles: ['ADMIN'] },
+const ALL: Role[] = ['OFFICER', 'DEPUTY_DIRECTOR', 'ADMIN']
+const LEADERS: Role[] = ['DEPUTY_DIRECTOR', 'ADMIN']
+
+export const NAV_GROUPS: NavGroup[] = [
+  {
+    label: null,
+    items: [
+      { to: '/my-shift', label: 'My Shift', icon: ClipboardList, roles: ['OFFICER'] },
+      { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: LEADERS },
+    ],
+  },
+  { label: 'Incidents', items: [{ to: '/incidents', label: 'Incident explorer', icon: Search, roles: ALL }] },
+  { label: 'Shifts', items: [{ to: '/roster', label: 'Roster', icon: CalendarDays, roles: ALL }] },
+  { label: 'People', items: [{ to: '/officers', label: 'Officers', icon: Users, roles: LEADERS }] },
+  {
+    label: 'Administration',
+    items: [
+      { to: '/admin/users', label: 'Users', icon: UserCog, roles: ['ADMIN'] },
+      { to: '/admin/settings', label: 'Settings', icon: Settings, roles: ['ADMIN'] },
+      { to: '/admin/lookups', label: 'Lists', icon: List, roles: ['ADMIN'] },
+      { to: '/admin/vehicles', label: 'Vehicles', icon: Truck, roles: ['ADMIN'] },
+      { to: '/admin/audit', label: 'Audit log', icon: ScrollText, roles: ['ADMIN'] },
+    ],
+  },
 ]
 
-export const navFor = (role: Role) => NAV_ITEMS.filter((item) => item.roles.includes(role))
+export function navFor(role: Role): NavGroup[] {
+  return NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => i.roles.includes(role)) })).filter((g) => g.items.length > 0)
+}

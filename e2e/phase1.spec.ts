@@ -47,7 +47,8 @@ test('admin adds officers and rosters them; the supervisor sees their shift', as
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByText('Saved 1 shift.')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Sign out' }).click()
+  await page.getByRole('button', { name: 'Account menu' }).click()
+  await page.getByRole('menuitem', { name: 'Sign out' }).click()
   await expect(page).toHaveURL(/\/login$/)
 
   await signIn(page, 'antony@test.local', 'OfficerTemp2026')
