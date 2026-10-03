@@ -55,3 +55,21 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
 export function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : 'Something went wrong'
 }
+
+/** Multipart upload of files under one field name; same error handling as `api`. */
+export async function apiUpload<T>(path: string, files: File[], field = 'files'): Promise<T> {
+  const form = new FormData()
+  for (const f of files) form.append(field, f)
+  let res: Response
+  try {
+    res = await fetch(buildUrl(path), { method: 'POST', credentials: 'same-origin', body: form })
+  } catch {
+    throw new ApiError(0, 'NETWORK', 'Cannot reach the server. Check your connection and try again.')
+  }
+  const data: unknown = await res.json().catch(() => null)
+  if (!res.ok) {
+    const err = (data as ApiErrorBody | null)?.error
+    throw new ApiError(res.status, err?.code ?? 'INTERNAL', err?.message ?? `Upload failed (${res.status})`, err?.fields)
+  }
+  return data as T
+}

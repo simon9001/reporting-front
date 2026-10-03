@@ -21,3 +21,9 @@ export function formatDuration(ms: number): string {
 }
 
 export const todayLocal = (now = new Date()) => localDateString(now, DEFAULT_TIMEZONE)
+
+const hourFmt = new Intl.DateTimeFormat('en-GB', { timeZone: DEFAULT_TIMEZONE, hour: '2-digit', hour12: false })
+export function greeting(now = new Date()): 'morning' | 'afternoon' | 'evening' {
+  const h = Number(hourFmt.format(now))
+  return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'
+}

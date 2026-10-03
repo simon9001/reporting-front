@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatDateTime, formatDuration, formatTime, todayLocal } from './format'
+import { formatDate, formatDateTime, formatDuration, formatTime, greeting, todayLocal } from './format'
 
 describe('format', () => {
   it('shows times in Nairobi time, day/month/year, 24-hour', () => {
@@ -16,5 +16,13 @@ describe('format', () => {
 
   it('gives today in Nairobi', () => {
     expect(todayLocal(new Date('2026-09-30T22:30:00Z'))).toBe('2026-10-01')
+  })
+})
+
+describe('greeting', () => {
+  it('greets by Nairobi time of day', () => {
+    expect(greeting(new Date('2026-09-30T05:00:00Z'))).toBe('morning') // 08:00
+    expect(greeting(new Date('2026-09-30T11:00:00Z'))).toBe('afternoon') // 14:00
+    expect(greeting(new Date('2026-09-30T16:00:00Z'))).toBe('evening') // 19:00
   })
 })
