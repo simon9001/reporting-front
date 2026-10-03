@@ -1,11 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #eef4fa;
-  --color-brand-100: #d6e4f2;
-  --color-brand-600: #1f4e79;
-  --color-brand-700: #1a4268;
-  --color-brand-800: #15365a;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  /* brand = teal accent; every existing brand utility class (bg, text, border) picks this up */
+  --color-brand-50: #f0faf8;
+  --color-brand-100: #e6f4f2;
+  --color-brand-200: #ccfbf1;
+  --color-brand-300: #99f6e4;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0f766e;
+  --color-brand-700: #115e59;
+  --color-brand-800: #134e4a;
+  --color-page: #fcfcfd;
+  --color-line: #eef0f2;
 }
 
 html,
@@ -15,5 +22,10 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-page text-slate-800 antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
 }
