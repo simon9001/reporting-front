@@ -1,7 +1,8 @@
 import type { Role } from '@sr/shared'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { Alert, Button, Spinner } from '../components/ui'
-import { ApiError, errorMessage } from '../lib/api'
+import { errorMessage } from '../lib/api'
+import { authGateDecision } from './authGate'
 import { useMe } from './hooks'
 
 export function homePathFor(role: Role): string {
@@ -13,11 +14,16 @@ export function homePathFor(role: Role): string {
 export function RequireAuth() {
   const me = useMe()
   const location = useLocation()
-  if (me.isPending) return <Spinner />
-  if (me.isError) {
-    if (me.error instanceof ApiError && me.error.status === 401) {
-      return <Navigate to="/login" replace state={{ from: location.pathname }} />
-    }
+  const gate = authGateDecision({
+    isPending: me.isPending,
+    error: me.error,
+    hasData: me.data !== undefined,
+    mustChangePassword: me.data?.user.mustChangePassword ?? false,
+    pathname: location.pathname,
+  })
+  if (gate === 'loading') return <Spinner />
+  if (gate === 'login') return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  if (gate === 'error') {
     return (
       <div className="mx-auto max-w-md space-y-3 p-6">
         <Alert>{errorMessage(me.error)}</Alert>
@@ -25,9 +31,7 @@ export function RequireAuth() {
       </div>
     )
   }
-  if (me.data.user.mustChangePassword && location.pathname !== '/change-password') {
-    return <Navigate to="/change-password" replace />
-  }
+  if (gate === 'change-password') return <Navigate to="/change-password" replace />
   return <Outlet />
 }
 
