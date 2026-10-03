@@ -9,6 +9,8 @@ import { SettingsPage } from './pages/admin/SettingsPage'
 import { UsersPage } from './pages/admin/UsersPage'
 import { VehiclesPage } from './pages/admin/VehiclesPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { IncidentExplorerPage } from './pages/incidents/IncidentExplorerPage'
+import { IncidentPage } from './pages/incidents/IncidentPage'
 import { MyShiftPage } from './pages/MyShiftPage'
 import { RosterPage } from './pages/roster/RosterPage'
 
@@ -24,6 +26,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <HomeRedirect /> },
           { path: 'roster', element: <RosterPage /> },
+          { path: 'incidents', element: <IncidentExplorerPage /> },
+          { path: 'incidents/:ref', element: <IncidentPage /> },
           { element: <RequireRole roles={['OFFICER']} />, children: [{ path: 'my-shift', element: <MyShiftPage /> }] },
           { element: <RequireRole roles={['DEPUTY_DIRECTOR', 'ADMIN']} />, children: [{ path: 'dashboard', element: <DashboardPage /> }] },
           {
