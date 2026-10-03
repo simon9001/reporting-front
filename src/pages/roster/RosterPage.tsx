@@ -1,4 +1,4 @@
-import { addDays, weekStartMonday, type RosterPersonRef, type ShiftDefinitionDto, type UserDto } from '@sr/shared'
+import { addDays, DEFAULT_TIMEZONE, weekStartMonday, type RosterPersonRef, type ShiftDefinitionDto, type UserDto } from '@sr/shared'
 import { useState } from 'react'
 import { useShiftDefinitions } from '../../api/config'
 import { useCopyWeek, useDeleteRosterShift, useRoster, useUpsertRoster } from '../../api/roster'
@@ -8,7 +8,7 @@ import { Alert, Button, cx, PageHeader, Select, Spinner } from '../../components
 import { errorMessage } from '../../lib/api'
 import { formatDate, todayLocal } from '../../lib/format'
 import { useNow } from '../../lib/useNow'
-import { buildRosterRows, collectChanges, type Draft, type RosterCell, weekdayLabel } from './rosterGrid'
+import { buildRosterRows, cellHasEnded, collectChanges, draftsOutsideView, removeSavedDrafts, type Draft, type RosterCell, weekdayLabel } from './rosterGrid'
 
 const DAYS = 14
 
@@ -37,6 +37,7 @@ export function RosterPage() {
   const rows = buildRosterRows(weekStart, DAYS, defs.data, roster.data)
   const { entries, problems } = collectChanges(drafts, rows)
   const current = me?.currentShift
+  const otherWeeks = draftsOutsideView(drafts, rows)
 
   const setDraft = (cell: RosterCell, patch: Partial<Draft>) =>
     setDrafts((prev) => {
@@ -57,7 +58,7 @@ export function RosterPage() {
 
   const save = () => run(async () => {
     await upsert.mutateAsync(entries)
-    setDrafts(new Map())
+    setDrafts((prev) => removeSavedDrafts(prev, entries))
     return `Saved ${entries.length} shift${entries.length === 1 ? '' : 's'}.`
   })
 
@@ -90,6 +91,7 @@ export function RosterPage() {
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={save} disabled={entries.length === 0 || problems.size > 0 || upsert.isPending}>Save changes</Button>
           <Button variant="secondary" onClick={() => setDrafts(new Map())} disabled={drafts.size === 0}>Discard</Button>
+          {otherWeeks > 0 && <span className="text-sm text-amber-800">{otherWeeks} unsaved change(s) in other weeks</span>}
           <Button variant="secondary" onClick={copyPrevious} disabled={copyWeek.isPending}>Copy previous week into first week</Button>
           <label className="inline-flex items-center gap-2 text-sm">
             <input type="checkbox" checked={swapRoles} onChange={(e) => setSwapRoles(e.target.checked)} /> Swap Supervisor / Officer when copying
@@ -111,7 +113,7 @@ export function RosterPage() {
                 {row.cells.map((cell) => {
                   const def = activeDefs.find((d) => d.code === cell.shiftCode)!
                   const isCurrent = current?.shiftDate === cell.shiftDate && current.shiftCode === cell.shiftCode
-                  const ended = cell.shift !== null && new Date(cell.shift.endsAt) <= now
+                  const ended = cell.shift ? new Date(cell.shift.endsAt) <= now : cellHasEnded(cell.shiftDate, now, DEFAULT_TIMEZONE)
                   return (
                     <td key={cell.key} data-testid={`cell-${cell.shiftDate}-${cell.shiftCode}`} className={cx('px-3 py-2 align-top', isCurrent && 'bg-brand-50 ring-2 ring-inset ring-brand-600')}>
                       {canEdit && (isAdmin || !ended) ? (

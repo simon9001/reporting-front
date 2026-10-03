@@ -1,6 +1,6 @@
 import type { ShiftDefinitionDto, ShiftDto } from '@sr/shared'
 import { describe, expect, it } from 'vitest'
-import { buildRosterRows, collectChanges, draftProblem, weekdayLabel, type Draft } from './rosterGrid'
+import { buildRosterRows, collectChanges, cellHasEnded, draftProblem, draftsOutsideView, removeSavedDrafts, weekdayLabel, type Draft } from './rosterGrid'
 
 const defs: ShiftDefinitionDto[] = [
   { id: 2, code: 'NIGHT', name: 'Night', startTime: '17:00', endTime: '08:00', sortOrder: 2, isActive: true },
@@ -41,5 +41,23 @@ describe('roster grid', () => {
 
   it('labels weekdays', () => {
     expect(weekdayLabel('2030-01-07')).toBe('Mon 07/01')
+  })
+
+  it('removes only the saved drafts and counts drafts outside the visible rows', () => {
+    const drafts = new Map<string, Draft>([
+      ['2030-01-07|DAY', { supervisorId: 1, officerId: 2 }],
+      ['2030-02-04|DAY', { supervisorId: 2, officerId: 1 }],
+    ])
+    const rows = buildRosterRows('2030-01-07', 2, defs, [])
+    expect(draftsOutsideView(drafts, rows)).toBe(1)
+    const left = removeSavedDrafts(drafts, [{ shiftDate: '2030-01-07', shiftCode: 'DAY', supervisorId: 1, officerId: 2 }])
+    expect([...left.keys()]).toEqual(['2030-02-04|DAY'])
+  })
+
+  it('treats a cell as ended only when its date is before yesterday', () => {
+    const now = new Date('2030-01-10T09:00:00Z')
+    expect(cellHasEnded('2030-01-08', now, 'Africa/Nairobi')).toBe(true)
+    expect(cellHasEnded('2030-01-09', now, 'Africa/Nairobi')).toBe(false)
+    expect(cellHasEnded('2030-01-10', now, 'Africa/Nairobi')).toBe(false)
   })
 })

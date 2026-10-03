@@ -1,4 +1,4 @@
-import { addDays, fromDateString, type RosterEntryInput, type ShiftDefinitionDto, type ShiftDto } from '@sr/shared'
+import { addDays, fromDateString, localDateString, type RosterEntryInput, type ShiftDefinitionDto, type ShiftDto } from '@sr/shared'
 
 export interface RosterCell { key: string; shiftDate: string; shiftCode: string; shift: ShiftDto | null }
 export interface RosterRow { shiftDate: string; cells: RosterCell[] }
@@ -39,6 +39,30 @@ export function collectChanges(drafts: Map<string, Draft>, rows: RosterRow[]) {
     else entries.push({ shiftDate: cell.shiftDate, shiftCode: cell.shiftCode, supervisorId: draft.supervisorId!, officerId: draft.officerId! })
   }
   return { entries, problems }
+}
+
+/** Drafts left after a save: only the saved cells are removed; edits in other weeks stay. */
+export function removeSavedDrafts(drafts: Map<string, Draft>, saved: RosterEntryInput[]): Map<string, Draft> {
+  const next = new Map(drafts)
+  for (const e of saved) next.delete(cellKey(e.shiftDate, e.shiftCode))
+  return next
+}
+
+/** How many drafts belong to cells outside the visible rows. */
+export function draftsOutsideView(drafts: Map<string, Draft>, rows: RosterRow[]): number {
+  const visible = new Set(rows.flatMap((r) => r.cells.map((c) => c.key)))
+  let n = 0
+  for (const k of drafts.keys()) if (!visible.has(k)) n += 1
+  return n
+}
+
+/**
+ * Whether a shift date is old enough that its shift has certainly ended. Simple, deliberately conservative rule:
+ * strictly before yesterday in the app time zone (a night shift that started yesterday may still be running).
+ * The server is the authority and still rejects edits to ended shifts for non-admins.
+ */
+export function cellHasEnded(shiftDate: string, now: Date, timeZone: string): boolean {
+  return shiftDate < addDays(localDateString(now, timeZone), -1)
 }
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
