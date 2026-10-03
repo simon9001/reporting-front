@@ -20,7 +20,11 @@ export function CommandPalette({ onClose, role }: { onClose: () => void; role: R
   useEffect(() => { closeRef.current = onClose })
   // captured during the first render, before the autoFocus input takes focus
   const [previous] = useState(() => document.activeElement as HTMLElement | null)
-  useEffect(() => () => { if (previous?.isConnected) previous.focus() }, [previous])
+  useEffect(() => {
+    // focus the input here too: StrictMode's simulated unmount would otherwise leave focus on `previous`
+    dialog.current?.querySelector<HTMLElement>('input')?.focus()
+    return () => { if (previous?.isConnected) previous.focus() }
+  }, [previous])
   const term = q.trim()
   const leader = role === 'DEPUTY_DIRECTOR' || role === 'ADMIN'
   const incidents = useQuery({
