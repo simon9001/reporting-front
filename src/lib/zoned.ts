@@ -18,6 +18,7 @@ export function toWallTimeInput(iso: string, timeZone = DEFAULT_TIMEZONE): strin
 
 /** <input type="datetime-local"> value (business wall time) → ISO instant. */
 export function fromWallTimeInput(value: string, timeZone = DEFAULT_TIMEZONE): string {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) return ''
   const [date = '', time = '00:00'] = value.split('T')
   const [y, m, d] = date.split('-').map(Number)
   const [hh, mm] = time.split(':').map(Number)

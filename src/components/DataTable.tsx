@@ -35,7 +35,7 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
         <thead className="border-b border-line text-left text-xs text-slate-500">
           <tr>
             {columns.map((c) => {
-              const active = sort === c.sortKey || sort === `-${c.sortKey}`
+              const active = !!c.sortKey && (sort === c.sortKey || sort === `-${c.sortKey}`)
               const desc = sort === `-${c.sortKey}`
               return (
                 <th key={c.key} className={cx('px-3 py-2.5 font-medium', c.className)} aria-sort={active ? (desc ? 'descending' : 'ascending') : undefined}>
@@ -55,8 +55,18 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
             <tr
               key={rowKey(row)}
               className={cx(onRowClick && 'cursor-pointer hover:bg-brand-50/60 focus:bg-brand-50 focus:outline-none')}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-              onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter') onRowClick(row) } : undefined}
+              onClick={onRowClick ? (e) => {
+                const inner = (e.target as HTMLElement).closest('a,button,input,select,textarea,label')
+                if (inner && inner !== e.currentTarget) return
+                onRowClick(row)
+              } : undefined}
+              onKeyDown={onRowClick ? (e) => {
+                if (e.target !== e.currentTarget) return
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onRowClick(row)
+                }
+              } : undefined}
               tabIndex={onRowClick ? 0 : undefined}
               aria-label={rowLabel?.(row)}
             >
@@ -71,7 +81,7 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
 
 export function Pagination({ page, pageSize, total, onPageChange }: { page: number; pageSize: number; total: number; onPageChange: (page: number) => void }) {
   const pages = Math.max(1, Math.ceil(total / pageSize))
-  const first = total === 0 ? 0 : (page - 1) * pageSize + 1
+  const first = total === 0 ? 0 : Math.min(total, (page - 1) * pageSize + 1)
   const last = Math.min(total, page * pageSize)
   return (
     <div className="flex items-center justify-between gap-2 border-t border-line px-3 pt-3 text-sm text-slate-500">

@@ -7,6 +7,7 @@ describe('wall-clock time in the business time zone', () => {
   })
   it('converts a datetime-local value back to the right instant', () => {
     expect(fromWallTimeInput('2026-09-30T01:15')).toBe('2026-09-29T22:15:00.000Z')
+    expect(fromWallTimeInput('')).toBe('')
     expect(fromWallTimeInput('2026-01-01T00:00', 'UTC')).toBe('2026-01-01T00:00:00.000Z')
   })
 })
