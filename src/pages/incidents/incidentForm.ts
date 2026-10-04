@@ -1,4 +1,4 @@
-import { RESOLVED_STATUSES, SEVERITY_LABELS, type EscalationRuleDto, type IncidentDto, type IncidentInput, type IncidentStatus, type Severity } from '@sr/shared'
+import { RESOLVED_STATUSES, SEVERITY_LABELS, type EscalationRuleDto, type IncidentDto, type IncidentInput, type IncidentStatus, type MeResponse, type Severity } from '@sr/shared'
 import { fromWallTimeInput, toWallTimeInput } from '../../lib/zoned'
 
 export interface IncidentFormState {
@@ -85,4 +85,19 @@ export function mergeSnapshots<F extends FileLike>(existingCount: number, pendin
     else files.push(f)
   }
   return { files, problems }
+}
+
+/** Admins always; officers while rostered on the current shift or on a previous shift that still takes late entries. */
+export function canLogIncidents(me: MeResponse | undefined): boolean {
+  if (!me) return false
+  if (me.user.role === 'ADMIN') return true
+  return me.user.role === 'OFFICER' && (!!me.currentShift?.myRole || !!me.previousShift)
+}
+
+/** "Now", unless the officer is only on the previous shift: then the last minute of that shift, so the time is one they may use. */
+export function defaultOccurredAt(me: MeResponse | undefined, nowIso: string): string {
+  const prev = me?.previousShift
+  if (!prev || me?.user.role === 'ADMIN' || me?.currentShift?.myRole) return nowIso
+  const lastMinute = Date.parse(prev.endsAt) - 60_000
+  return Date.parse(nowIso) > lastMinute ? new Date(lastMinute).toISOString() : nowIso
 }

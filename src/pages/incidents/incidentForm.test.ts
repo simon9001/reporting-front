@@ -1,6 +1,6 @@
-import type { IncidentDto } from '@sr/shared'
+import type { IncidentDto, MeResponse, ShiftRole } from '@sr/shared'
 import { describe, expect, it } from 'vitest'
-import { emptyForm, escalationHint, formFromIncident, formToInput, mergeSnapshots } from './incidentForm'
+import { canLogIncidents, defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, mergeSnapshots } from './incidentForm'
 
 describe('incident form mapping', () => {
   it('starts at "now" in Nairobi wall time with sensible defaults', () => {
@@ -56,5 +56,33 @@ describe('mergeSnapshots', () => {
     const r = mergeSnapshots(0, [], [f('big.png', 5000), f('x.exe', 1, 'application/x-msdownload')], 10, 1000)
     expect(r.files).toEqual([])
     expect(r.problems).toHaveLength(2)
+  })
+})
+
+describe('who can log incidents, and from when', () => {
+  const user = (role: MeResponse['user']['role']) => ({ id: 7, fullName: 'Simon Gatungo', email: 's@x', role, mustChangePassword: false }) as unknown as MeResponse['user']
+  const current = (myRole: ShiftRole | null): MeResponse['currentShift'] => ({
+    shiftDate: '2026-10-04', shiftCode: 'DAY', shiftName: 'Day', startsAt: '2026-10-04T05:00:00.000Z', endsAt: '2026-10-04T17:00:00.000Z', shift: null, myRole,
+  })
+  const previous: MeResponse['previousShift'] = {
+    id: 41, shiftDate: '2026-10-03', shiftCode: 'NIGHT', shiftName: 'Night', startsAt: '2026-10-03T17:00:00.000Z', endsAt: '2026-10-04T05:00:00.000Z', myRole: 'OFFICER',
+  }
+  const me = (role: MeResponse['user']['role'], cur: MeResponse['currentShift'], prev: MeResponse['previousShift']): MeResponse => ({ user: user(role), currentShift: cur, previousShift: prev })
+
+  it('allows admins always, and officers on the current or an editable previous shift', () => {
+    expect(canLogIncidents(undefined)).toBe(false)
+    expect(canLogIncidents(me('ADMIN', current(null), null))).toBe(true)
+    expect(canLogIncidents(me('DEPUTY_DIRECTOR', current(null), null))).toBe(false)
+    expect(canLogIncidents(me('OFFICER', current('SUPERVISOR'), null))).toBe(true)
+    expect(canLogIncidents(me('OFFICER', current(null), previous))).toBe(true)
+    expect(canLogIncidents(me('OFFICER', current(null), null))).toBe(false)
+  })
+
+  it('defaults the time to now, or into the previous shift for an officer who is only on that one', () => {
+    const now = '2026-10-04T05:30:00.000Z'
+    expect(defaultOccurredAt(me('OFFICER', current('OFFICER'), previous), now)).toBe(now)
+    expect(defaultOccurredAt(me('ADMIN', current(null), null), now)).toBe(now)
+    expect(defaultOccurredAt(me('OFFICER', current(null), previous), now)).toBe('2026-10-04T04:59:00.000Z')
+    expect(defaultOccurredAt(me('OFFICER', null, previous), '2026-10-04T04:30:00.000Z')).toBe('2026-10-04T04:30:00.000Z')
   })
 })

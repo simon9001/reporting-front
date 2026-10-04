@@ -6,12 +6,14 @@ import { ImagePlus, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useEscalationRules, useLookups } from '../../api/config'
 import { useSaveIncident, useUploadSnapshots } from '../../api/incidents'
+import { useMe } from '../../auth/hooks'
 import { Drawer } from '../../components/Drawer'
 import { Segmented } from '../../components/Segmented'
 import { Alert, Button, Field, Input, Select, Textarea } from '../../components/ui'
 import { ApiError, errorMessage } from '../../lib/api'
+import { formatDateTime } from '../../lib/format'
 import { zodFieldErrors } from '../../lib/forms'
-import { emptyForm, escalationHint, formFromIncident, formToInput, isResolved, mergeSnapshots, type IncidentFormState } from './incidentForm'
+import { defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, isResolved, mergeSnapshots, type IncidentFormState } from './incidentForm'
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,application/pdf'
 
@@ -24,12 +26,14 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
   // After a create whose uploads failed, the form switches to editing the saved incident so it can never POST twice.
   const [savedOnce, setSavedOnce] = useState<IncidentDto | null>(null)
   const incident = savedOnce ?? incidentProp
+  const { data: me } = useMe()
+  const newForm = () => emptyForm(defaultOccurredAt(me, new Date().toISOString()))
   const locations = useLookups('LOCATION')
   const categories = useLookups('CATEGORY')
   const rules = useEscalationRules()
   const save = useSaveIncident()
   const upload = useUploadSnapshots()
-  const [form, setForm] = useState<IncidentFormState>(() => (incident ? formFromIncident(incident) : emptyForm(new Date().toISOString())))
+  const [form, setForm] = useState<IncidentFormState>(() => (incident ? formFromIncident(incident) : newForm()))
   const [files, setFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [notice, setNotice] = useState<string | null>(null)
@@ -37,7 +41,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
 
   useEffect(() => {
     if (!open) return
-    setForm(incidentProp ? formFromIncident(incidentProp) : emptyForm(new Date().toISOString()))
+    setForm(incidentProp ? formFromIncident(incidentProp) : newForm())
     setFiles([])
     setErrors({})
     setNotice(null)
@@ -87,6 +91,8 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
   }
 
   const rule = rules.data?.find((r) => r.severity === form.severity)
+  const late = me?.user.role === 'OFFICER' ? me.previousShift : null
+  const timeHint = late ? `Late entries for the ${late.shiftName.toLowerCase()} shift can go back to ${formatDateTime(late.startsAt)}` : undefined
   const hint = escalationHint(rule, form.severity)
 
   return (
@@ -113,7 +119,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         {notice && <Alert tone="warning">{notice}</Alert>}
 
         <section className="grid gap-4 sm:grid-cols-2">
-          <Field label="Date and time" error={errors.occurredAt}>
+          <Field label="Date and time" error={errors.occurredAt} hint={timeHint}>
             <Input type="datetime-local" value={form.occurredAt} onChange={(e) => set('occurredAt', e.target.value)} />
           </Field>
           <Field label="Location" error={errors.locationId}>

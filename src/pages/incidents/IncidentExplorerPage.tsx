@@ -1,5 +1,5 @@
 import { INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, SEVERITIES, SEVERITY_LABELS } from '@sr/shared'
-import { Download, Paperclip } from 'lucide-react'
+import { Download, Paperclip, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useShiftDefinitions, useLookups } from '../../api/config'
 import { useIncidents } from '../../api/incidents'
@@ -11,14 +11,16 @@ import { FilterBar } from '../../components/FilterBar'
 import { MultiSelect } from '../../components/MultiSelect'
 import { filterButtonClass } from '../../components/Popover'
 import { Segmented } from '../../components/Segmented'
-import { Alert, Badge, Card, cx, PageHeader } from '../../components/ui'
+import { Alert, Badge, Button, Card, cx, PageHeader } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
 import { downloadFile } from '../../lib/download'
 import { todayLocal } from '../../lib/format'
 import { csvToList, listToCsv, useUrlFilters } from '../../lib/urlFilters'
 import { incidentColumns } from './columns'
 import { EXPLORER_KEYS, explorerQuery, FILTER_KEYS, hasActiveFilters, lastPage } from './explorerQuery'
+import { canLogIncidents } from './incidentForm'
 import { IncidentDrawer } from './IncidentDrawer'
+import { IncidentFormDrawer } from './IncidentFormDrawer'
 
 export function IncidentExplorerPage() {
   const { values, set, clear } = useUrlFilters(EXPLORER_KEYS, FILTER_KEYS)
@@ -35,6 +37,8 @@ export function IncidentExplorerPage() {
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [truncated, setTruncated] = useState(false)
+  const [logging, setLogging] = useState(false)
+  const canLog = canLogIncidents(me)
 
   const total = list.data?.total ?? 0
   const last = lastPage(total, query.pageSize)
@@ -61,10 +65,15 @@ export function IncidentExplorerPage() {
       <PageHeader
         title="Incident explorer"
         description={list.data ? `${list.data.total} incident${list.data.total === 1 ? '' : 's'} match` : 'Every incident ever recorded'}
-        actions={leader && (
-          <button type="button" onClick={runExport} disabled={exporting} aria-busy={exporting} className={filterButtonClass}>
-            <Download className="size-4 text-slate-500" />{exporting ? 'Exporting…' : 'Export Excel'}
-          </button>
+        actions={(leader || canLog) && (
+          <>
+            {leader && (
+              <button type="button" onClick={runExport} disabled={exporting} aria-busy={exporting} className={filterButtonClass}>
+                <Download className="size-4 text-slate-500" />{exporting ? 'Exporting…' : 'Export Excel'}
+              </button>
+            )}
+            {canLog && <Button onClick={() => setLogging(true)}><Plus className="size-4" />Log incident</Button>}
+          </>
         )}
       />
       <Card>
@@ -115,6 +124,7 @@ export function IncidentExplorerPage() {
         </div>
       </Card>
       <IncidentDrawer idOrRef={values.open ?? null} onClose={() => set({ open: undefined, ...keepPage })} />
+      {canLog && <IncidentFormDrawer open={logging} onClose={() => setLogging(false)} onSaved={(dto) => { setLogging(false); set({ open: dto.ref, ...keepPage }) }} />}
     </>
   )
 }
