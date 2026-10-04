@@ -1,14 +1,24 @@
-import { incidentPlace, type IncidentListItemDto } from '@sr/shared'
+import { incidentPlace, type IncidentListItemDto, type IncidentSide } from '@sr/shared'
 import { Paperclip } from 'lucide-react'
-import { SeverityBadge, StatusBadge } from '../../components/badges'
+import { SeverityBadge, SideBadge, StatusBadge } from '../../components/badges'
 import type { Column } from '../../components/DataTable'
 import { formatDate, formatDateTime } from '../../lib/format'
 
-export function incidentColumns({ showShift = true }: { showShift?: boolean } = {}): Column<IncidentListItemDto>[] {
+const placeHeader = (side?: IncidentSide) => (side === 'MOBILE' ? 'Vehicle · Place' : side === 'STATIC' ? 'Location' : 'Location / unit')
+
+function Where({ i }: { i: IncidentListItemDto }) {
+  if (i.side === 'MOBILE') {
+    return <span><span className="font-medium text-slate-800">{i.vehicle?.unitId ?? '—'}</span><span className="block text-xs text-slate-500">{incidentPlace(i)}</span></span>
+  }
+  return <span>{incidentPlace(i)}{i.locationDetail && <span className="block text-xs text-slate-500">{i.locationDetail}</span>}</span>
+}
+
+export function incidentColumns({ showShift = true, side }: { showShift?: boolean; side?: IncidentSide } = {}): Column<IncidentListItemDto>[] {
   const cols: Column<IncidentListItemDto>[] = [
     { key: 'ref', header: 'ID', sortKey: 'ref', render: (i) => <span className="font-semibold text-slate-900">{i.ref}</span> },
+    { key: 'side', header: 'Side', sortKey: 'side', render: (i) => <SideBadge side={i.side} /> },
     { key: 'occurredAt', header: 'Date / time', sortKey: 'occurredAt', className: 'whitespace-nowrap', render: (i) => formatDateTime(i.occurredAt) },
-    { key: 'location', header: 'Location', render: (i) => <span>{incidentPlace(i)}{i.locationDetail && <span className="block text-xs text-slate-500">{i.locationDetail}</span>}</span> },
+    { key: 'location', header: placeHeader(side), render: (i) => <Where i={i} /> },
     { key: 'category', header: 'Category', render: (i) => i.category.value },
     { key: 'severity', header: 'Severity', sortKey: 'severity', render: (i) => <SeverityBadge severity={i.severity} /> },
     { key: 'status', header: 'Status', sortKey: 'status', render: (i) => <StatusBadge status={i.status} /> },

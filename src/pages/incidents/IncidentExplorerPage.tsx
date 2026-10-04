@@ -1,7 +1,7 @@
-import { INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, SEVERITIES, SEVERITY_LABELS } from '@sr/shared'
+import { INCIDENT_SIDE_SHORT, INCIDENT_SIDES, INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, LINK_STATUS_LABELS, LINK_STATUSES, SEVERITIES, SEVERITY_LABELS, VEHICLE_STATUS_LABELS, VEHICLE_STATUSES, type IncidentSide } from '@sr/shared'
 import { Download, Paperclip, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useShiftDefinitions, useLookups } from '../../api/config'
+import { useShiftDefinitions, useLookups, useVehicles } from '../../api/config'
 import { useIncidents } from '../../api/incidents'
 import { useMe } from '../../auth/hooks'
 import { DataTable, Pagination } from '../../components/DataTable'
@@ -17,7 +17,7 @@ import { downloadFile } from '../../lib/download'
 import { todayLocal } from '../../lib/format'
 import { csvToList, listToCsv, useUrlFilters } from '../../lib/urlFilters'
 import { incidentColumns } from './columns'
-import { EXPLORER_KEYS, explorerQuery, FILTER_KEYS, hasActiveFilters, lastPage } from './explorerQuery'
+import { EXPLORER_KEYS, explorerQuery, FILTER_KEYS, hasActiveFilters, lastPage, sidePatch } from './explorerQuery'
 import { canLogIncidents } from './incidentForm'
 import { IncidentDrawer } from './IncidentDrawer'
 import { IncidentFormDrawer } from './IncidentFormDrawer'
@@ -27,6 +27,9 @@ export function IncidentExplorerPage() {
   const { data: me } = useMe()
   const categories = useLookups('CATEGORY')
   const locations = useLookups('LOCATION')
+  const platforms = useLookups('PLATFORM')
+  const vehicles = useVehicles()
+  const side = values.side === 'STATIC' || values.side === 'MOBILE' ? (values.side as IncidentSide) : undefined
   const defs = useShiftDefinitions()
   const query = explorerQuery(values)
   const list = useIncidents(query)
@@ -81,10 +84,16 @@ export function IncidentExplorerPage() {
           <FilterBar
             search={values.q ?? ''}
             onSearchChange={(q) => set({ q: q || undefined })}
-            placeholder="Search ID, description, location, officer…"
+            placeholder="Search ID, description, location, unit, officer…"
             canClear={hasActiveFilters(values)}
             onClear={clear}
           >
+            <Segmented
+              label="Side"
+              value={side ?? ''}
+              onChange={(v) => set(sidePatch(v || undefined))}
+              options={[{ value: '', label: 'All' }, ...INCIDENT_SIDES.map((s) => ({ value: s, label: INCIDENT_SIDE_SHORT[s] }))]}
+            />
             <DateRangePicker value={period} onChange={(p) => set({ from: p?.from, to: p?.to })} today={todayLocal()} />
             <MultiSelect label="Severity" options={[...SEVERITIES].reverse().map((s) => ({ value: s, label: SEVERITY_LABELS[s] }))} value={csvToList(values.severity)} onChange={(v) => set({ severity: listToCsv(v) })} />
             <MultiSelect label="Status" options={INCIDENT_STATUSES.map((s) => ({ value: s, label: INCIDENT_STATUS_LABELS[s] }))} value={csvToList(values.status)} onChange={(v) => set({ status: listToCsv(v) })} />
@@ -104,13 +113,22 @@ export function IncidentExplorerPage() {
             >
               <Paperclip className="size-4" />Has snapshots
             </button>
+            {side === 'MOBILE' && (
+              <>
+                <MultiSelect label="Vehicle" options={(vehicles.data ?? []).map((v) => ({ value: String(v.id), label: v.unitId }))} value={csvToList(values.vehicleId)} onChange={(v) => set({ vehicleId: listToCsv(v) })} />
+                <MultiSelect label="Platform" options={(platforms.data ?? []).map((p) => ({ value: String(p.id), label: p.value }))} value={csvToList(values.platformId)} onChange={(v) => set({ platformId: listToCsv(v) })} />
+                <MultiSelect label="Vehicle status" options={VEHICLE_STATUSES.map((s) => ({ value: s, label: VEHICLE_STATUS_LABELS[s] }))} value={csvToList(values.vehicleStatus)} onChange={(v) => set({ vehicleStatus: listToCsv(v) })} />
+                <MultiSelect label="GPS" options={LINK_STATUSES.map((s) => ({ value: s, label: LINK_STATUS_LABELS[s] }))} value={csvToList(values.gpsStatus)} onChange={(v) => set({ gpsStatus: listToCsv(v) })} />
+                <MultiSelect label="Dashcam" options={LINK_STATUSES.map((s) => ({ value: s, label: LINK_STATUS_LABELS[s] }))} value={csvToList(values.dashcamStatus)} onChange={(v) => set({ dashcamStatus: listToCsv(v) })} />
+              </>
+            )}
           </FilterBar>
           {values.shiftId && <Badge tone="blue">Showing one shift only <button type="button" className="ml-1 font-semibold" onClick={() => set({ shiftId: undefined })} aria-label="Show all shifts">×</button></Badge>}
           {exportError && <Alert>{exportError}</Alert>}
           {truncated && <Alert tone="warning">Only the first 10,000 rows were exported. Narrow the filters to export everything.</Alert>}
           {list.isError && <Alert>{errorMessage(list.error)}</Alert>}
           <DataTable
-            columns={incidentColumns()}
+            columns={incidentColumns({ side })}
             rows={list.data?.items ?? []}
             rowKey={(i) => i.id}
             loading={list.isPending}
