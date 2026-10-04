@@ -134,4 +134,16 @@ describe('static and mobile weighbridge forms', () => {
     } as unknown as IncidentDto
     expect(formFromIncident(dto)).toMatchObject({ side: 'MOBILE', vehicleId: '7', place: 'Mlolongo', gpsStatus: 'OFFLINE', platformId: '2', remarks: 'Near Athi River' })
   })
+
+  it('round-trips a mobile incident whose place is a listed location', () => {
+    const dto = {
+      side: 'MOBILE', occurredAt: '2026-09-29T22:15:00.000Z', location: { id: 3, value: 'Mombasa Road' }, locationText: null, locationDetail: null,
+      vehicle: { id: 7, unitId: 'KDG 143S' }, vehicleStatus: 'ONLINE', gpsStatus: 'ONLINE', dashcamStatus: 'ONLINE', platform: { id: 2, value: 'Tracksolid' },
+      category: { id: 5, value: 'CCTV' }, severity: 'LOW', description: 'x y z', immediateAction: null, remarks: null,
+      escalatedTo: null, escalatedAt: null, assignedTo: null, status: 'OPEN', resolvedAt: null, resolution: null,
+    } as unknown as IncidentDto
+    const form = formFromIncident(dto)
+    expect(form.place).toBe('Mombasa Road')
+    expect(formToInput(form, places)).toMatchObject({ side: 'MOBILE', locationId: 3, locationText: null })
+  })
 })

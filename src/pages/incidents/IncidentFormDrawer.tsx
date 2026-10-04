@@ -160,7 +160,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         {incident ? (
           <p className="flex items-center gap-2 text-sm text-slate-600"><SideBadge side={form.side} />{INCIDENT_SIDE_LABELS[form.side]} incident</p>
         ) : (
-          <Segmented<IncidentSide> label="Weighbridge" value={form.side} onChange={(v) => set('side', v)} options={INCIDENT_SIDES.map((s) => ({ value: s, label: INCIDENT_SIDE_LABELS[s] }))} />
+          <Segmented<IncidentSide> label="Weighbridge" value={form.side} onChange={(v) => { set('side', v); setErrors({}) }} options={INCIDENT_SIDES.map((s) => ({ value: s, label: INCIDENT_SIDE_LABELS[s] }))} />
         )}
 
         {mobile ? (
@@ -177,12 +177,6 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
                 <Input list={placesListId} autoComplete="off" value={form.place} onChange={(e) => set('place', e.target.value)} />
               </Field>
               <datalist id={placesListId}>{(locations.data ?? []).filter((l) => l.isActive).map((l) => <option key={l.id} value={l.value} />)}</datalist>
-              <Field label="Platform" error={errors.platformId}>
-                <Select value={form.platformId} onChange={(e) => set('platformId', e.target.value)}>
-                  <option value="">Choose…</option>
-                  {activeOrCurrent(platforms.data, form.platformId).map((p) => <option key={p.id} value={p.id}>{p.value}</option>)}
-                </Select>
-              </Field>
               <Field label="Vehicle status" error={errors.vehicleStatus}>
                 <Select value={form.vehicleStatus} onChange={(e) => set('vehicleStatus', e.target.value as VehicleStatus | '')}>
                   <option value="">Choose…</option>
@@ -191,6 +185,12 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
               </Field>
               {linkSelect('GPS status', 'gpsStatus')}
               {linkSelect('Dashcam status', 'dashcamStatus')}
+              <Field label="Platform" error={errors.platformId}>
+                <Select value={form.platformId} onChange={(e) => set('platformId', e.target.value)}>
+                  <option value="">Choose…</option>
+                  {activeOrCurrent(platforms.data, form.platformId).map((p) => <option key={p.id} value={p.id}>{p.value}</option>)}
+                </Select>
+              </Field>
               <div className="sm:col-span-2">
                 <Field label="Event / incident" error={errors.description}>
                   <Textarea rows={3} value={form.description} onChange={(e) => set('description', e.target.value)} />

@@ -16,8 +16,8 @@ import { IncidentFormDrawer } from './incidents/IncidentFormDrawer'
 import { UpcomingShifts } from './UpcomingShifts'
 
 function SideCounts({ shiftId }: { shiftId: number }) {
-  const s = useIncidents({ shiftId, side: 'STATIC', pageSize: 25 })
-  const m = useIncidents({ shiftId, side: 'MOBILE', pageSize: 25 })
+  const s = useIncidents({ shiftId, side: 'STATIC', pageSize: 1 })
+  const m = useIncidents({ shiftId, side: 'MOBILE', pageSize: 1 })
   if (!s.data || !m.data) return null
   return <span className="font-normal text-slate-500"> · Static {s.data.total} · Mobile {m.data.total}</span>
 }
