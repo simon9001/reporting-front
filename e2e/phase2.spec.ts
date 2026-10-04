@@ -59,6 +59,14 @@ test('officer logs an incident with a snapshot; the Deputy Director sees it live
 })
 
 test('officer logs a mobile weighbridge incident; the Deputy Director sees it under Mobile and finds it by unit', async ({ browser }) => {
+  // The Deputy Director is already on the Mobile dashboard before the officer saves, so the row must arrive live.
+  const ddContext = await browser.newContext()
+  const dd = await ddContext.newPage()
+  await signIn(dd, 'e2e-dd@test.local', 'DirectorPass2026')
+  await expect(dd).toHaveURL(/\/dashboard$/)
+  await dd.getByRole('radiogroup', { name: 'Side' }).getByRole('radio', { name: 'Mobile' }).click()
+  await expect(dd).toHaveURL(/side=MOBILE/)
+
   const officerContext = await browser.newContext()
   const officer = await officerContext.newPage()
   await signIn(officer, 'e2e-sup@test.local', 'SupervisorPass2026')
@@ -67,7 +75,8 @@ test('officer logs a mobile weighbridge incident; the Deputy Director sees it un
   await officer.getByRole('button', { name: 'Log incident' }).click()
   const form = officer.getByRole('dialog')
   await form.getByRole('radio', { name: 'Mobile weighbridge' }).click()
-  await form.locator('label', { hasText: /^Vehicle \/ unit/ }).locator('select').selectOption({ label: 'KDG 143S — Mobile weighbridge unit' })
+  const unit = form.locator('label', { hasText: /^Vehicle \/ unit/ }).locator('select')
+  await unit.selectOption(await unit.locator('option', { hasText: 'KDG 143S' }).getAttribute('value'))
   await form.locator('label', { hasText: /^Location/ }).locator('input').fill('Mlolongo')
   await form.locator('label', { hasText: /^Platform/ }).locator('select').selectOption({ label: 'Tracksolid' })
   await form.locator('label', { hasText: /^Vehicle status/ }).locator('select').selectOption({ label: 'Online' })
@@ -82,11 +91,7 @@ test('officer logs a mobile weighbridge incident; the Deputy Director sees it un
   await expect(title).toBeVisible()
   const ref = (await title.textContent())!.trim()
 
-  const ddContext = await browser.newContext()
-  const dd = await ddContext.newPage()
-  await signIn(dd, 'e2e-dd@test.local', 'DirectorPass2026')
-  await dd.getByRole('radiogroup', { name: 'Side' }).getByRole('radio', { name: 'Mobile' }).click()
-  await expect(dd).toHaveURL(/side=MOBILE/)
+  // No reload on the Deputy Director's screen: the live update brings it in.
   await expect(dd.getByRole('row', { name: `Open ${ref}` })).toBeVisible({ timeout: 15_000 })
 
   await dd.goto(`/incidents?q=${encodeURIComponent('KDG 143S')}`)
