@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bucketLabel, clampRange, dayNightLink, drillRange, explorerLink, resolvePeriod, weekLabel } from './chartData'
+import { bucketLabel, clampRange, dayNightLink, drillRange, explorerLink, HEALTH_TILES, parseSide, resolvePeriod, sideSplit, sideTrendLink, weekLabel, withSide } from './chartData'
 
 describe('dashboard chart helpers', () => {
   it('labels buckets and works out the range a click drills into', () => {
@@ -34,5 +34,31 @@ describe('dashboard chart helpers', () => {
     expect(resolvePeriod('banana', '2026-03-01', fb).invalid).toBe(true)
     expect(resolvePeriod('2025-01-01', '2026-01-03', fb).invalid).toBe(true)
     expect(resolvePeriod('2025-01-01', '2026-01-02', fb).invalid).toBe(false)
+  })
+  it('reads the side from the URL and carries it into drill-downs', () => {
+    expect(parseSide('MOBILE')).toBe('MOBILE')
+    expect(parseSide('BOTH')).toBeUndefined()
+    expect(parseSide(undefined)).toBeUndefined()
+    expect(withSide({ severity: 'HIGH' }, 'STATIC')).toEqual({ severity: 'HIGH', side: 'STATIC' })
+    expect(withSide({ side: 'MOBILE', vehicleId: '7' }, undefined)).toEqual({ side: 'MOBILE', vehicleId: '7' })
+    expect(dayNightLink('2026-09-28', 'NIGHT', { from: '2026-09-01', to: '2026-09-30' }, 'MOBILE')).toBe('/incidents?from=2026-09-28&to=2026-09-30&shiftCode=NIGHT&side=MOBILE')
+    expect(sideTrendLink('2026-09-28', 'week', 'STATIC', { from: '2026-09-01', to: '2026-09-30' })).toBe('/incidents?from=2026-09-28&to=2026-09-30&side=STATIC')
+  })
+  it('writes the static/mobile split line for a KPI', () => {
+    const bySide = {
+      STATIC: { total: 30, avgMinutesToResolve: 42, escalatedOnTimePct: 90, openCriticalHigh: 1 },
+      MOBILE: { total: 12, avgMinutesToResolve: null, escalatedOnTimePct: 75, openCriticalHigh: 0 },
+    }
+    expect(sideSplit(bySide, (s) => s.total)).toBe('Static 30 · Mobile 12')
+    expect(sideSplit(bySide, (s) => s.avgMinutesToResolve, ' min')).toBe('Static 42 min · Mobile —')
+  })
+  it('drills each equipment-health tile into mobile incidents with that status', () => {
+    expect(HEALTH_TILES.map((t) => [t.key, t.filter])).toEqual([
+      ['gpsOffline', { gpsStatus: 'OFFLINE' }],
+      ['dashcamOffline', { dashcamStatus: 'OFFLINE' }],
+      ['vehicleOffline', { vehicleStatus: 'OFFLINE' }],
+      ['gpsUnknown', { gpsStatus: 'UNKNOWN' }],
+      ['dashcamUnknown', { dashcamStatus: 'UNKNOWN' }],
+    ])
   })
 })

@@ -4,11 +4,12 @@ import { cx } from './ui'
 
 const toneClass: Record<DeltaTone, string> = { good: 'text-green-700', bad: 'text-red-700', neutral: 'text-slate-500' }
 
-export function StatCard({ label, value, delta, hint, onClick }: {
+export function StatCard({ label, value, delta, hint, footnote, onClick }: {
   label: string
   value: ReactNode
   delta?: { text: string; tone: DeltaTone } | null
   hint?: ReactNode
+  footnote?: ReactNode
   onClick?: () => void
 }) {
   const body = (
@@ -19,6 +20,7 @@ export function StatCard({ label, value, delta, hint, onClick }: {
         {delta && <span className={toneClass[delta.tone]}>{delta.text}</span>}
         {hint && <span className="text-slate-500">{delta ? ' · ' : ''}{hint}</span>}
       </p>
+      {footnote && <p className="mt-1 text-xs text-slate-500">{footnote}</p>}
     </>
   )
   const base = 'rounded-xl border border-line bg-white p-4 text-left'

@@ -1,4 +1,4 @@
-import { addDays, daysBetween, fromDateString, toDateString } from '@sr/shared'
+import { addDays, daysBetween, fromDateString, INCIDENT_SIDES, toDateString, type IncidentSide, type MobileHealthDto, type SideStats } from '@sr/shared'
 import type { Period } from '../../lib/periods'
 
 const ddmm = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}`
@@ -25,7 +25,33 @@ export function clampRange(range: Period, period: Period): Period {
   return { from: range.from > period.from ? range.from : period.from, to: range.to < period.to ? range.to : period.to }
 }
 
-/** Explorer link for one Day-vs-Night bar: that week (clamped to the period) and that shift only. */
-export function dayNightLink(weekStart: string, shiftCode: string, period: Period): string {
-  return explorerLink(clampRange(drillRange(weekStart, 'week'), period), { shiftCode })
+export const parseSide = (v: string | undefined): IncidentSide | undefined =>
+  (INCIDENT_SIDES as readonly string[]).includes(v ?? '') ? (v as IncidentSide) : undefined
+
+/** Adds the dashboard's side to a drill-down, unless the drill-down already names one. */
+export function withSide(extra: Record<string, string>, side?: IncidentSide): Record<string, string> {
+  return side && !extra.side ? { ...extra, side } : extra
 }
+
+/** Explorer link for one Day-vs-Night bar: that week (clamped to the period), that shift, and the dashboard's side. */
+export function dayNightLink(weekStart: string, shiftCode: string, period: Period, side?: IncidentSide): string {
+  return explorerLink(clampRange(drillRange(weekStart, 'week'), period), withSide({ shiftCode }, side))
+}
+
+export function sideTrendLink(bucket: string, granularity: 'day' | 'week', side: IncidentSide, period: Period): string {
+  return explorerLink(clampRange(drillRange(bucket, granularity), period), { side })
+}
+
+export function sideSplit(bySide: Record<IncidentSide, SideStats>, pick: (s: SideStats) => number | null, unit = ''): string {
+  const f = (v: number | null) => (v === null ? '—' : `${v}${unit}`)
+  return `Static ${f(pick(bySide.STATIC))} · Mobile ${f(pick(bySide.MOBILE))}`
+}
+
+type HealthKey = Exclude<keyof MobileHealthDto, 'total' | 'platforms'>
+export const HEALTH_TILES: { key: HealthKey; label: string; filter: Record<string, string> }[] = [
+  { key: 'gpsOffline', label: 'GPS offline', filter: { gpsStatus: 'OFFLINE' } },
+  { key: 'dashcamOffline', label: 'Dashcam offline', filter: { dashcamStatus: 'OFFLINE' } },
+  { key: 'vehicleOffline', label: 'Vehicle offline', filter: { vehicleStatus: 'OFFLINE' } },
+  { key: 'gpsUnknown', label: 'GPS unknown', filter: { gpsStatus: 'UNKNOWN' } },
+  { key: 'dashcamUnknown', label: 'Dashcam unknown', filter: { dashcamStatus: 'UNKNOWN' } },
+]
