@@ -27,7 +27,7 @@ export function emptyForm(nowIso: string): IncidentFormState {
 export function formFromIncident(i: IncidentDto): IncidentFormState {
   return {
     occurredAt: toWallTimeInput(i.occurredAt),
-    locationId: String(i.location.id),
+    locationId: i.location ? String(i.location.id) : '',
     locationDetail: i.locationDetail ?? '',
     categoryId: String(i.category.id),
     severity: i.severity,

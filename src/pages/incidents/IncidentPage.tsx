@@ -1,3 +1,4 @@
+import { incidentPlace } from '@sr/shared'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
@@ -23,7 +24,7 @@ export function IncidentPage() {
         <>
           <PageHeader
             title={q.data.ref}
-            description={`${q.data.category.value} at ${q.data.location.value} · ${formatDateTime(q.data.occurredAt)}`}
+            description={`${q.data.category.value} at ${incidentPlace(q.data)} · ${formatDateTime(q.data.occurredAt)}`}
             actions={q.data.canEdit && <Button onClick={() => setEditing(true)}><Pencil className="size-4" />Edit</Button>}
           />
           <Card><IncidentDetail incident={q.data} /></Card>

@@ -1,4 +1,4 @@
-import type { IncidentDto } from '@sr/shared'
+import { incidentPlace, type IncidentDto } from '@sr/shared'
 import type { ReactNode } from 'react'
 import { useDeleteSnapshot } from '../../api/incidents'
 import { EscalationBadge, SeverityBadge, StatusBadge } from '../../components/badges'
@@ -26,7 +26,7 @@ export function IncidentDetail({ incident: i }: { incident: IncidentDto; onEdit?
       </div>
       <dl className="divide-y divide-slate-100">
         <Fact label="Occurred">{formatDateTime(i.occurredAt)}</Fact>
-        <Fact label="Location">{i.location.value}{i.locationDetail && ` · ${i.locationDetail}`}</Fact>
+        <Fact label="Location">{incidentPlace(i)}{i.locationDetail && ` · ${i.locationDetail}`}</Fact>
         <Fact label="Category">{i.category.value}</Fact>
         <Fact label="Shift">{i.shiftName} shift of {formatDate(i.shiftDate)}{i.afterMidnight && <span className="text-slate-500"> (after midnight)</span>}<span className="block text-xs text-slate-500">Supervisor {i.supervisorName} · Officer {i.officerName}</span></Fact>
         <Fact label="Reported by">{i.reportedBy.fullName}</Fact>

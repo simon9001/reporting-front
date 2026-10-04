@@ -1,4 +1,4 @@
-import type { IncidentListItemDto } from '@sr/shared'
+import { incidentPlace, type IncidentListItemDto } from '@sr/shared'
 import { Paperclip } from 'lucide-react'
 import { SeverityBadge, StatusBadge } from '../../components/badges'
 import type { Column } from '../../components/DataTable'
@@ -8,7 +8,7 @@ export function incidentColumns({ showShift = true }: { showShift?: boolean } = 
   const cols: Column<IncidentListItemDto>[] = [
     { key: 'ref', header: 'ID', sortKey: 'ref', render: (i) => <span className="font-semibold text-slate-900">{i.ref}</span> },
     { key: 'occurredAt', header: 'Date / time', sortKey: 'occurredAt', className: 'whitespace-nowrap', render: (i) => formatDateTime(i.occurredAt) },
-    { key: 'location', header: 'Location', render: (i) => <span>{i.location.value}{i.locationDetail && <span className="block text-xs text-slate-500">{i.locationDetail}</span>}</span> },
+    { key: 'location', header: 'Location', render: (i) => <span>{incidentPlace(i)}{i.locationDetail && <span className="block text-xs text-slate-500">{i.locationDetail}</span>}</span> },
     { key: 'category', header: 'Category', render: (i) => i.category.value },
     { key: 'severity', header: 'Severity', sortKey: 'severity', render: (i) => <SeverityBadge severity={i.severity} /> },
     { key: 'status', header: 'Status', sortKey: 'status', render: (i) => <StatusBadge status={i.status} /> },
