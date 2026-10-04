@@ -1,7 +1,7 @@
 import { incidentPlace, type IncidentDto } from '@sr/shared'
 import type { ReactNode } from 'react'
 import { useDeleteSnapshot } from '../../api/incidents'
-import { EscalationBadge, SeverityBadge, StatusBadge } from '../../components/badges'
+import { EscalationBadge, LinkChip, SeverityBadge, SideBadge, StatusBadge, VehicleStatusChip } from '../../components/badges'
 import { Alert } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
 import { formatDate, formatDateTime, formatDuration } from '../../lib/format'
@@ -21,16 +21,32 @@ export function IncidentDetail({ incident: i }: { incident: IncidentDto; onEdit?
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <div className="flex flex-wrap gap-2"><SeverityBadge severity={i.severity} /><StatusBadge status={i.status} /><EscalationBadge result={i.escalationResult} minutes={i.escalationMinutes} /></div>
+        <div className="flex flex-wrap gap-2"><SideBadge side={i.side} /><SeverityBadge severity={i.severity} /><StatusBadge status={i.status} /><EscalationBadge result={i.escalationResult} minutes={i.escalationMinutes} /></div>
         <p className="text-base font-medium text-slate-900">{i.description}</p>
       </div>
       <dl className="divide-y divide-slate-100">
         <Fact label="Occurred">{formatDateTime(i.occurredAt)}</Fact>
-        <Fact label="Location">{incidentPlace(i)}{i.locationDetail && ` · ${i.locationDetail}`}</Fact>
+        {i.side === 'MOBILE' ? (
+          <>
+            <Fact label="Vehicle / unit">{i.vehicle?.unitId ?? '—'}</Fact>
+            <Fact label="Location">{incidentPlace(i) || '—'}</Fact>
+            <Fact label="Unit status">
+              <span className="flex flex-wrap gap-1.5">
+                {i.vehicleStatus && <VehicleStatusChip status={i.vehicleStatus} />}
+                {i.gpsStatus && <LinkChip label="GPS" status={i.gpsStatus} />}
+                {i.dashcamStatus && <LinkChip label="Dashcam" status={i.dashcamStatus} />}
+              </span>
+            </Fact>
+            <Fact label="Platform">{i.platform?.value ?? '—'}</Fact>
+          </>
+        ) : (
+          <Fact label="Location">{incidentPlace(i)}{i.locationDetail && ` · ${i.locationDetail}`}</Fact>
+        )}
         <Fact label="Category">{i.category.value}</Fact>
         <Fact label="Shift">{i.shiftName} shift of {formatDate(i.shiftDate)}{i.afterMidnight && <span className="text-slate-500"> (after midnight)</span>}<span className="block text-xs text-slate-500">Supervisor {i.supervisorName} · Officer {i.officerName}</span></Fact>
-        <Fact label="Reported by">{i.reportedBy.fullName}</Fact>
-        {i.immediateAction && <Fact label="Immediate action">{i.immediateAction}</Fact>}
+        <Fact label={i.side === 'MOBILE' ? 'Logged by' : 'Reported by'}>{i.reportedBy.fullName}</Fact>
+        {i.immediateAction && <Fact label={i.side === 'MOBILE' ? 'Action taken' : 'Immediate action'}>{i.immediateAction}</Fact>}
+        {i.remarks && <Fact label="Remarks">{i.remarks}</Fact>}
         <Fact label="Escalation">{i.escalatedTo ? <>{i.escalatedTo}{i.escalatedAt && ` at ${formatDateTime(i.escalatedAt)}`}</> : <span className="text-slate-400">Nobody notified</span>}</Fact>
         {i.assignedTo && <Fact label="Assigned to">{i.assignedTo}</Fact>}
         {i.resolvedAt && <Fact label="Resolved">{formatDateTime(i.resolvedAt)}{i.minutesToResolve !== null && <span className="text-slate-500"> · took {formatDuration(i.minutesToResolve * 60_000)}</span>}</Fact>}

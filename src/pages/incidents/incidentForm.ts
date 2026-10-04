@@ -1,7 +1,11 @@
-import { RESOLVED_STATUSES, SEVERITY_LABELS, type EscalationRuleDto, type IncidentDto, type IncidentInput, type IncidentStatus, type MeResponse, type Severity } from '@sr/shared'
+import {
+  incidentPlace, RESOLVED_STATUSES, SEVERITY_LABELS,
+  type EscalationRuleDto, type IncidentDto, type IncidentInput, type IncidentSide, type IncidentStatus, type LinkStatus, type MeResponse, type Severity, type VehicleStatus,
+} from '@sr/shared'
 import { fromWallTimeInput, toWallTimeInput } from '../../lib/zoned'
 
 export interface IncidentFormState {
+  side: IncidentSide
   occurredAt: string // datetime-local, business wall time
   locationId: string
   locationDetail: string
@@ -15,19 +19,30 @@ export interface IncidentFormState {
   status: IncidentStatus
   resolvedAt: string
   resolution: string
+  // mobile weighbridge sheet
+  vehicleId: string
+  place: string
+  vehicleStatus: VehicleStatus | ''
+  gpsStatus: LinkStatus | ''
+  dashcamStatus: LinkStatus | ''
+  platformId: string
+  remarks: string
 }
 
-export function emptyForm(nowIso: string): IncidentFormState {
+export function emptyForm(nowIso: string, side: IncidentSide = 'STATIC'): IncidentFormState {
   return {
-    occurredAt: toWallTimeInput(nowIso), locationId: '', locationDetail: '', categoryId: '', severity: '',
+    side, occurredAt: toWallTimeInput(nowIso), locationId: '', locationDetail: '', categoryId: '', severity: '',
     description: '', immediateAction: '', escalatedTo: '', escalatedAt: '', assignedTo: '', status: 'OPEN', resolvedAt: '', resolution: '',
+    vehicleId: '', place: '', vehicleStatus: '', gpsStatus: '', dashcamStatus: '', platformId: '', remarks: '',
   }
 }
 
 export function formFromIncident(i: IncidentDto): IncidentFormState {
+  const mobile = i.side === 'MOBILE'
   return {
+    side: i.side,
     occurredAt: toWallTimeInput(i.occurredAt),
-    locationId: i.location ? String(i.location.id) : '',
+    locationId: !mobile && i.location ? String(i.location.id) : '',
     locationDetail: i.locationDetail ?? '',
     categoryId: String(i.category.id),
     severity: i.severity,
@@ -39,17 +54,29 @@ export function formFromIncident(i: IncidentDto): IncidentFormState {
     status: i.status,
     resolvedAt: i.resolvedAt ? toWallTimeInput(i.resolvedAt) : '',
     resolution: i.resolution ?? '',
+    vehicleId: i.vehicle ? String(i.vehicle.id) : '',
+    place: mobile ? incidentPlace(i) : '',
+    vehicleStatus: i.vehicleStatus ?? '',
+    gpsStatus: i.gpsStatus ?? '',
+    dashcamStatus: i.dashcamStatus ?? '',
+    platformId: i.platform ? String(i.platform.id) : '',
+    remarks: i.remarks ?? '',
   }
 }
 
 export const isResolved = (s: IncidentStatus) => (RESOLVED_STATUSES as readonly string[]).includes(s)
 
-export function formToInput(f: IncidentFormState): IncidentInput {
-  return {
-    side: 'STATIC',
+/** A typed mobile place that matches a listed location (ignoring case and spaces) is saved as that location. */
+export function resolvePlace(text: string, places: { id: number; value: string }[]): { locationId: number | null; locationText: string | null } {
+  const t = text.trim()
+  if (!t) return { locationId: null, locationText: null }
+  const hit = places.find((p) => p.value.trim().toLowerCase() === t.toLowerCase())
+  return hit ? { locationId: hit.id, locationText: null } : { locationId: null, locationText: t }
+}
+
+export function formToInput(f: IncidentFormState, places: { id: number; value: string }[] = []): IncidentInput {
+  const common = {
     occurredAt: f.occurredAt ? fromWallTimeInput(f.occurredAt) : '',
-    locationId: Number(f.locationId) || 0,
-    locationDetail: f.locationDetail || null,
     categoryId: Number(f.categoryId) || 0,
     severity: (f.severity || undefined) as Severity,
     description: f.description,
@@ -60,6 +87,20 @@ export function formToInput(f: IncidentFormState): IncidentInput {
     status: f.status,
     resolvedAt: isResolved(f.status) && f.resolvedAt ? fromWallTimeInput(f.resolvedAt) : null,
     resolution: f.resolution || null,
+  }
+  if (f.side === 'STATIC') {
+    return { side: 'STATIC', ...common, locationId: Number(f.locationId) || 0, locationDetail: f.locationDetail || null }
+  }
+  return {
+    side: 'MOBILE',
+    ...common,
+    vehicleId: Number(f.vehicleId) || 0,
+    ...resolvePlace(f.place, places),
+    vehicleStatus: (f.vehicleStatus || undefined) as VehicleStatus,
+    gpsStatus: (f.gpsStatus || undefined) as LinkStatus,
+    dashcamStatus: (f.dashcamStatus || undefined) as LinkStatus,
+    platformId: Number(f.platformId) || 0,
+    remarks: f.remarks || null,
   }
 }
 

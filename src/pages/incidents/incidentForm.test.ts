@@ -1,6 +1,6 @@
-import type { IncidentDto, MeResponse, ShiftRole } from '@sr/shared'
+import { incidentInputSchema, type IncidentDto, type MeResponse, type ShiftRole } from '@sr/shared'
 import { describe, expect, it } from 'vitest'
-import { canLogIncidents, defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, mergeSnapshots } from './incidentForm'
+import { canLogIncidents, defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, mergeSnapshots, resolvePlace } from './incidentForm'
 
 describe('incident form mapping', () => {
   it('starts at "now" in Nairobi wall time with sensible defaults', () => {
@@ -84,5 +84,54 @@ describe('who can log incidents, and from when', () => {
     expect(defaultOccurredAt(me('ADMIN', current(null), null), now)).toBe(now)
     expect(defaultOccurredAt(me('OFFICER', current(null), previous), now)).toBe('2026-10-04T04:59:00.000Z')
     expect(defaultOccurredAt(me('OFFICER', null, previous), '2026-10-04T04:30:00.000Z')).toBe('2026-10-04T04:30:00.000Z')
+  })
+})
+
+describe('static and mobile weighbridge forms', () => {
+  const places = [{ id: 3, value: 'Mombasa Road' }, { id: 4, value: 'Isinya W.B' }]
+  const mobileForm = () => ({
+    ...emptyForm('2026-09-29T22:15:00.000Z', 'MOBILE'),
+    vehicleId: '7', place: 'Mlolongo', vehicleStatus: 'ONLINE' as const, gpsStatus: 'ONLINE' as const, dashcamStatus: 'OFFLINE' as const,
+    platformId: '2', categoryId: '5', severity: 'MEDIUM' as const, description: 'Inside camera blank', immediateAction: 'Notified fleet manager',
+    remarks: 'CH3 rainbow colours',
+  })
+
+  it('matches a typed place to the list, ignoring case, or keeps it as typed', () => {
+    expect(resolvePlace(' mombasa road ', places)).toEqual({ locationId: 3, locationText: null })
+    expect(resolvePlace('Mlolongo', places)).toEqual({ locationId: null, locationText: 'Mlolongo' })
+    expect(resolvePlace('  ', places)).toEqual({ locationId: null, locationText: null })
+  })
+
+  it('sends only the mobile sheet fields for a mobile incident, and the schema accepts them', () => {
+    const input = formToInput(mobileForm(), places)
+    expect(input).toMatchObject({
+      side: 'MOBILE', vehicleId: 7, locationId: null, locationText: 'Mlolongo', vehicleStatus: 'ONLINE', gpsStatus: 'ONLINE', dashcamStatus: 'OFFLINE',
+      platformId: 2, remarks: 'CH3 rainbow colours', immediateAction: 'Notified fleet manager',
+    })
+    expect(input).not.toHaveProperty('locationDetail')
+    expect(incidentInputSchema.safeParse(input).success).toBe(true)
+  })
+
+  it('sends only the static fields for a static incident', () => {
+    const input = formToInput({ ...mobileForm(), side: 'STATIC', locationId: '4', locationDetail: 'Camera 4' }, places)
+    expect(input).toMatchObject({ side: 'STATIC', locationId: 4, locationDetail: 'Camera 4' })
+    expect(input).not.toHaveProperty('vehicleId')
+    expect(input).not.toHaveProperty('remarks')
+  })
+
+  it('keeps the shared fields when the officer switches side', () => {
+    const f = { ...emptyForm('2026-09-29T22:15:00.000Z'), description: 'Camera offline', severity: 'HIGH' as const, categoryId: '5' }
+    const switched = { ...f, side: 'MOBILE' as const }
+    expect(formToInput(switched, places)).toMatchObject({ side: 'MOBILE', description: 'Camera offline', severity: 'HIGH', categoryId: 5 })
+  })
+
+  it('loads a mobile incident back into the form', () => {
+    const dto = {
+      side: 'MOBILE', occurredAt: '2026-09-29T22:15:00.000Z', location: null, locationText: 'Mlolongo', locationDetail: null,
+      vehicle: { id: 7, unitId: 'KDG 143S' }, vehicleStatus: 'ONLINE', gpsStatus: 'OFFLINE', dashcamStatus: 'UNKNOWN', platform: { id: 2, value: 'Tracksolid' },
+      category: { id: 5, value: 'CCTV' }, severity: 'HIGH', description: 'GPS lost', immediateAction: null, remarks: 'Near Athi River',
+      escalatedTo: null, escalatedAt: null, assignedTo: null, status: 'OPEN', resolvedAt: null, resolution: null,
+    } as unknown as IncidentDto
+    expect(formFromIncident(dto)).toMatchObject({ side: 'MOBILE', vehicleId: '7', place: 'Mlolongo', gpsStatus: 'OFFLINE', platformId: '2', remarks: 'Near Athi River' })
   })
 })

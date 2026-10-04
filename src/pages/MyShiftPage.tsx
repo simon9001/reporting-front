@@ -15,10 +15,17 @@ import { IncidentDrawer } from './incidents/IncidentDrawer'
 import { IncidentFormDrawer } from './incidents/IncidentFormDrawer'
 import { UpcomingShifts } from './UpcomingShifts'
 
+function SideCounts({ shiftId }: { shiftId: number }) {
+  const s = useIncidents({ shiftId, side: 'STATIC', pageSize: 25 })
+  const m = useIncidents({ shiftId, side: 'MOBILE', pageSize: 25 })
+  if (!s.data || !m.data) return null
+  return <span className="font-normal text-slate-500"> · Static {s.data.total} · Mobile {m.data.total}</span>
+}
+
 function ShiftIncidents({ title, shiftId, emptyHint, onOpen }: { title: ReactNode; shiftId: number; emptyHint?: string; onOpen: (ref: string) => void }) {
   const incidents = useIncidents({ shiftId, sort: '-occurredAt', pageSize: 25 })
   return (
-    <Card title={title} actions={<Link to={`/incidents?shiftId=${shiftId}`} className="text-sm font-medium text-brand-700 hover:underline">Open in explorer</Link>}>
+    <Card title={<>{title}<SideCounts shiftId={shiftId} /></>} actions={<Link to={`/incidents?shiftId=${shiftId}`} className="text-sm font-medium text-brand-700 hover:underline">Open in explorer</Link>}>
       <DataTable
         columns={incidentColumns({ showShift: false })}
         rows={incidents.data?.items ?? []}

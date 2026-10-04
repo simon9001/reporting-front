@@ -1,6 +1,6 @@
 import {
-  ESCALATION_RESULT_LABELS, INCIDENT_STATUS_LABELS, OUTSTANDING_STATUSES, SEVERITY_LABELS,
-  type EscalationResult, type IncidentStatus, type Severity,
+  ESCALATION_RESULT_LABELS, INCIDENT_SIDE_SHORT, INCIDENT_STATUS_LABELS, LINK_STATUS_LABELS, OUTSTANDING_STATUSES, SEVERITY_LABELS, VEHICLE_STATUS_LABELS,
+  type EscalationResult, type IncidentSide, type IncidentStatus, type LinkStatus, type Severity, type VehicleStatus,
 } from '@sr/shared'
 import { cx } from './ui'
 
@@ -31,4 +31,21 @@ export function EscalationBadge({ result, minutes }: { result: EscalationResult;
   if (result === 'NOT_REQUIRED') return <span className="text-xs text-slate-400">{ESCALATION_RESULT_LABELS[result]}</span>
   const tone = result === 'ON_TIME' ? 'bg-green-100 text-green-800' : result === 'ESCALATED' ? 'bg-slate-100 text-slate-700' : 'bg-red-100 text-red-800'
   return <span className={cx(pill, tone)}>{ESCALATION_RESULT_LABELS[result]}{minutes != null ? ` · ${minutes} min` : ''}</span>
+}
+
+export const SIDE_COLORS: Record<IncidentSide, string> = { STATIC: '#0f766e', MOBILE: '#7c3aed' }
+const SIDE_CLASS: Record<IncidentSide, string> = { STATIC: 'bg-teal-50 text-teal-800 ring-1 ring-teal-200', MOBILE: 'bg-violet-50 text-violet-800 ring-1 ring-violet-200' }
+
+export function SideBadge({ side }: { side: IncidentSide }) {
+  return <span className={cx(pill, SIDE_CLASS[side])}>{INCIDENT_SIDE_SHORT[side]}</span>
+}
+
+const LINK_CLASS: Record<LinkStatus, string> = { ONLINE: 'bg-green-100 text-green-800', OFFLINE: 'bg-red-100 text-red-800', UNKNOWN: 'bg-slate-100 text-slate-700' }
+
+export function LinkChip({ label, status }: { label: string; status: LinkStatus }) {
+  return <span className={cx(pill, LINK_CLASS[status])}>{label}: {LINK_STATUS_LABELS[status]}</span>
+}
+
+export function VehicleStatusChip({ status }: { status: VehicleStatus }) {
+  return <span className={cx(pill, status === 'OFFLINE' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800')}>Vehicle: {VEHICLE_STATUS_LABELS[status]}</span>
 }
