@@ -2,7 +2,7 @@ import type { Role } from '@sr/shared'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { Alert, Button, Spinner } from '../components/ui'
 import { errorMessage } from '../lib/api'
-import { authGateDecision } from './authGate'
+import { authGateDecision, redirectFrom } from './authGate'
 import { useMe } from './hooks'
 
 export function homePathFor(role: Role): string {
@@ -22,7 +22,7 @@ export function RequireAuth() {
     pathname: location.pathname,
   })
   if (gate === 'loading') return <Spinner />
-  if (gate === 'login') return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  if (gate === 'login') return <Navigate to="/login" replace state={{ from: redirectFrom(location) }} />
   if (gate === 'error') {
     return (
       <div className="mx-auto max-w-md space-y-3 p-6">

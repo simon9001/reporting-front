@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useLocation, useNavigate } from 'react-router'
 import { Alert, Button, Field, Input } from '../components/ui'
 import { errorMessage } from '../lib/api'
+import { loginRedirectTarget } from './authGate'
 import { useLogin } from './hooks'
 
 export function LoginPage() {
@@ -17,8 +18,7 @@ export function LoginPage() {
   const onSubmit = form.handleSubmit(async (values) => {
     try {
       await login.mutateAsync(values)
-      const from = (location.state as { from?: string } | null)?.from
-      navigate(from && from !== '/login' ? from : '/', { replace: true })
+      navigate(loginRedirectTarget(location.state), { replace: true })
     } catch (err) {
       form.setError('root', { message: errorMessage(err) })
     }
