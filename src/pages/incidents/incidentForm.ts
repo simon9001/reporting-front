@@ -46,6 +46,7 @@ export const isResolved = (s: IncidentStatus) => (RESOLVED_STATUSES as readonly 
 
 export function formToInput(f: IncidentFormState): IncidentInput {
   return {
+    side: 'STATIC',
     occurredAt: f.occurredAt ? fromWallTimeInput(f.occurredAt) : '',
     locationId: Number(f.locationId) || 0,
     locationDetail: f.locationDetail || null,
