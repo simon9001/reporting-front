@@ -21,6 +21,11 @@ describe('live client', () => {
     expect(keys.filter((k) => k[0] === 'incidents')).toHaveLength(1)
   })
 
+  it('refreshes open incident details when the shift turns over or the roster changes (canEdit depends on both)', () => {
+    expect(queryKeysForTopics(['shift'])).toContainEqual(['incident'])
+    expect(queryKeysForTopics(['roster'])).toContainEqual(['incident'])
+  })
+
   it('reports status, forwards topics, and asks for a catch-up after reconnecting', () => {
     const es = new FakeEventSource()
     const statuses: string[] = []

@@ -5,8 +5,8 @@ export type LiveStatus = 'connecting' | 'live' | 'reconnecting'
 /** Server topic → TanStack Query key prefixes to refetch. */
 export const TOPIC_QUERY_KEYS: Record<LiveTopic, readonly (readonly string[])[]> = {
   incidents: [['incidents'], ['incident'], ['analytics'], ['search']],
-  roster: [['roster'], ['me']],
-  shift: [['me'], ['roster'], ['incidents'], ['analytics']],
+  roster: [['roster'], ['me'], ['incident']],
+  shift: [['me'], ['roster'], ['incidents'], ['incident'], ['analytics']],
   users: [['users'], ['search'], ['roster'], ['me']],
   config: [['config'], ['me']],
   audit: [['audit']],

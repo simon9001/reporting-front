@@ -18,7 +18,7 @@ import { errorMessage } from '../../lib/api'
 import { useNow } from '../../lib/useNow'
 import { useUrlFilters } from '../../lib/urlFilters'
 import { IncidentDrawer } from '../incidents/IncidentDrawer'
-import { clampRange, drillRange, explorerLink, resolvePeriod } from './chartData'
+import { clampRange, dayNightLink, drillRange, explorerLink, resolvePeriod } from './chartData'
 import { CategoryBars, DayNightBars, SeverityDonut, TrendChart } from './charts'
 
 export function DashboardPage() {
@@ -112,7 +112,7 @@ export function DashboardPage() {
           ))}
         </Card>
         <Card title="Day vs Night shift">
-          {card(a.dayNight, 4, (d) => <DayNightBars data={d} />)}
+          {card(a.dayNight, 4, (d) => <DayNightBars data={d} onBarClick={(w, code) => navigate(dayNightLink(w, code, period))} barHref={(w, code) => dayNightLink(w, code, period)} />)}
         </Card>
       </div>
 

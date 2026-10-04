@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bucketLabel, clampRange, drillRange, explorerLink, resolvePeriod, weekLabel } from './chartData'
+import { bucketLabel, clampRange, dayNightLink, drillRange, explorerLink, resolvePeriod, weekLabel } from './chartData'
 
 describe('dashboard chart helpers', () => {
   it('labels buckets and works out the range a click drills into', () => {
@@ -17,6 +17,12 @@ describe('dashboard chart helpers', () => {
     expect(clampRange(drillRange('2026-09-28', 'week'), period)).toEqual({ from: '2026-09-30', to: '2026-10-02' })
     expect(clampRange(drillRange('2026-09-30', 'day'), period)).toEqual({ from: '2026-09-30', to: '2026-09-30' })
     expect(clampRange({ from: '2026-09-28', to: '2026-10-04' }, { from: '2026-09-01', to: '2026-10-31' })).toEqual({ from: '2026-09-28', to: '2026-10-04' })
+  })
+  it('drills a Day-vs-Night bar into its week, clamped to the period, for that shift only', () => {
+    const period = { from: '2026-09-30', to: '2026-10-31' }
+    expect(dayNightLink('2026-09-28', 'NIGHT', period)).toBe('/incidents?from=2026-09-30&to=2026-10-04&shiftCode=NIGHT')
+    expect(dayNightLink('2026-10-26', 'DAY', period)).toBe('/incidents?from=2026-10-26&to=2026-10-31&shiftCode=DAY')
+    expect(dayNightLink('2026-10-05', 'DAY', period)).toBe('/incidents?from=2026-10-05&to=2026-10-11&shiftCode=DAY')
   })
   it('validates the URL period like the backend', () => {
     const fb = { from: '2026-10-01', to: '2026-10-31' }

@@ -24,3 +24,8 @@ export function resolvePeriod(from: string | null | undefined, to: string | null
 export function clampRange(range: Period, period: Period): Period {
   return { from: range.from > period.from ? range.from : period.from, to: range.to < period.to ? range.to : period.to }
 }
+
+/** Explorer link for one Day-vs-Night bar: that week (clamped to the period) and that shift only. */
+export function dayNightLink(weekStart: string, shiftCode: string, period: Period): string {
+  return explorerLink(clampRange(drillRange(weekStart, 'week'), period), { shiftCode })
+}

@@ -111,9 +111,14 @@ export function CategoryBars({ data, onBarClick, barHref }: { data: CountByDto[]
   )
 }
 
-export function DayNightBars({ data }: { data: DayNightDto }) {
+export function DayNightBars({ data, onBarClick, barHref }: {
+  data: DayNightDto
+  onBarClick: (weekStart: string, shiftCode: string) => void
+  barHref: (weekStart: string, shiftCode: string) => string
+}) {
   if (data.points.every((p) => Object.values(p.counts).every((n) => n === 0))) return <EmptyState title="No incidents" />
   const rows = data.points.map((p) => ({ label: weekLabel(p.weekStart), ...p.counts }))
+  const click = (code: string) => (_: unknown, index: number) => { const p = data.points[index]; if (p) onBarClick(p.weekStart, code) }
   const colors = ['#5eead4', '#0f766e', '#14b8a6']
   return (
     <>
@@ -125,14 +130,17 @@ export function DayNightBars({ data }: { data: DayNightDto }) {
           <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
           <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-          {data.shifts.map((s, i) => <Bar key={s.code} dataKey={s.code} name={s.name} fill={colors[i % colors.length]} radius={[4, 4, 0, 0]} maxBarSize={22} />)}
+          {data.shifts.map((s, i) => <Bar key={s.code} dataKey={s.code} name={s.name} fill={colors[i % colors.length]} radius={[4, 4, 0, 0]} maxBarSize={22} cursor="pointer" onClick={click(s.code)} />)}
         </BarChart>
       </ResponsiveContainer>
     </div>
     <SrTable
       caption="Incidents per week by shift"
       head={['Week', ...data.shifts.map((x) => x.name)]}
-      rows={rows.map((r) => [r.label, ...data.shifts.map((x) => (r as Record<string, string | number>)[x.code] ?? 0)])}
+      rows={data.points.map((p) => [
+        weekLabel(p.weekStart),
+        ...data.shifts.map((x) => <Link key={x.code} to={barHref(p.weekStart, x.code)} aria-label={`${p.counts[x.code] ?? 0} ${x.name} incidents, ${weekLabel(p.weekStart)}`}>{p.counts[x.code] ?? 0}</Link>),
+      ])}
     />
     </>
   )
