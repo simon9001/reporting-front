@@ -46,7 +46,7 @@ test('officer logs an incident with a snapshot; the Deputy Director sees it live
   // No reload on the Deputy Director's screen: the live update brings it in.
   await expect(dd.getByRole('row', { name: `Open ${ref}` })).toBeVisible({ timeout: 15_000 })
 
-  const today = localDateString(new Date(), DEFAULT_TIMEZONE)
+  const today = localDateString(new Date(), process.env.SR_APP_TIMEZONE ?? DEFAULT_TIMEZONE)
   await dd.goto(`/incidents?from=${today}&to=${today}`)
   await dd.getByRole('row', { name: `Open ${ref}` }).click()
   const record = dd.getByRole('dialog')
