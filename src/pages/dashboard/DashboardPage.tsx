@@ -101,8 +101,8 @@ export function DashboardPage() {
           {card(a.hotspots, 4, (hs) => hs.length === 0 ? <EmptyState title="No incidents" /> : (
             <ul className="divide-y divide-slate-100">
               {hs.map((h) => (
-                <li key={h.locationId}>
-                  <button type="button" onClick={() => drill({ locationId: String(h.locationId) })} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm hover:bg-brand-50/50">
+                <li key={h.key}>
+                  <button type="button" onClick={() => drill(h.drill)} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm hover:bg-brand-50/50">
                     <span><span className="font-medium text-slate-800">{h.location}</span>{h.topCategory && <span className="block text-xs text-slate-500">Mostly {h.topCategory}</span>}</span>
                     <span className="text-lg font-semibold text-slate-900">{h.count}</span>
                   </button>
