@@ -67,9 +67,10 @@ export function SnapshotGallery({ attachments, onDelete }: { attachments: Incide
                 <img src={a.url} alt={a.originalName} loading="lazy" className="size-full object-cover" />
               </button>
             ) : (
-              <a href={a.url} target="_blank" rel="noreferrer" className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 text-xs text-slate-600">
+              <a href={a.url} download={a.originalName} aria-label={`Download ${a.originalName}`} className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 text-xs text-slate-600">
                 <FileText className="size-6 text-slate-400" aria-hidden />
                 <span className="max-w-full truncate px-2">{a.originalName}</span>
+                <span className="text-[11px] text-brand-700">Download PDF</span>
               </a>
             )}
             {onDelete && a.canDelete && (
