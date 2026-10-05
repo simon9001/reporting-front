@@ -13,11 +13,12 @@ import { incidentColumns } from './incidents/columns'
 import { canLogIncidents } from './incidents/incidentForm'
 import { IncidentDrawer } from './incidents/IncidentDrawer'
 import { IncidentFormDrawer } from './incidents/IncidentFormDrawer'
+import { sideCountQuery } from './sideCounts'
 import { UpcomingShifts } from './UpcomingShifts'
 
 function SideCounts({ shiftId }: { shiftId: number }) {
-  const s = useIncidents({ shiftId, side: 'STATIC', pageSize: 1 })
-  const m = useIncidents({ shiftId, side: 'MOBILE', pageSize: 1 })
+  const s = useIncidents(sideCountQuery(shiftId, 'STATIC'))
+  const m = useIncidents(sideCountQuery(shiftId, 'MOBILE'))
   if (!s.data || !m.data) return null
   return <span className="font-normal text-slate-500"> · Static {s.data.total} · Mobile {m.data.total}</span>
 }
