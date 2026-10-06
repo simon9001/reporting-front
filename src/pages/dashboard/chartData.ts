@@ -55,3 +55,7 @@ export const HEALTH_TILES: { key: HealthKey; label: string; filter: Record<strin
   { key: 'gpsUnknown', label: 'GPS unknown', filter: { gpsStatus: 'UNKNOWN' } },
   { key: 'dashcamUnknown', label: 'Dashcam unknown', filter: { dashcamStatus: 'UNKNOWN' } },
 ]
+
+const SHIFT_COLORS: Record<string, string> = { DAY: '#0891b2', NIGHT: '#6d28d9' }
+/** Day/Night series colours (validated pair); other shift codes get neutral slate. */
+export const shiftColor = (code: string): string => SHIFT_COLORS[code] ?? '#64748b'

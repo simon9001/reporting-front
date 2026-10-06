@@ -82,28 +82,28 @@ export function DashboardPage() {
       {invalid && <p role="status" className="text-sm text-amber-700">Showing this month — choose a period of at most one year.</p>}
       {a.summary.isError && <Alert>{errorMessage(a.summary.error)}</Alert>}
 
-      <div className="grid gap-4 xl:grid-cols-[1.3fr_repeat(4,1fr)]">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-[1.3fr_repeat(4,1fr)]">
         <OnDutyCard currentShift={me?.currentShift ?? null} now={now} canPlan />
         <StatCard
-          label="Total incidents" value={s?.total.current ?? '—'} delta={s ? describeDelta(s.total, 'percent', 'lower') : null}
+          tone="charcoal" label="Total incidents" value={s?.total.current ?? '—'} delta={s ? describeDelta(s.total, 'percent', 'lower') : null}
           hint={s && describeDelta(s.total, 'percent', 'lower') ? 'vs previous' : undefined} footnote={split && sideSplit(split, (x) => x.total)} onClick={() => drill({})}
         />
         <StatCard
-          label="Open critical / high" value={s?.openCriticalHigh ?? '—'}
+          tone="red" label="Open critical / high" value={s?.openCriticalHigh ?? '—'}
           hint={s && s.openCriticalHighOver24h > 0 ? `${s.openCriticalHighOver24h} over 24 h old` : 'right now'}
           footnote={split && sideSplit(split, (x) => x.openCriticalHigh)} onClick={() => navigate(openCriticalHighLink)}
         />
         <StatCard
-          label="Avg. time to resolve" value={s?.avgMinutesToResolve.current != null ? `${s.avgMinutesToResolve.current} min` : '—'}
+          tone="yellow" label="Avg. time to resolve" value={s?.avgMinutesToResolve.current != null ? `${s.avgMinutesToResolve.current} min` : '—'}
           delta={s ? describeDelta(s.avgMinutesToResolve, 'minutes', 'lower') : null} footnote={split && sideSplit(split, (x) => x.avgMinutesToResolve, ' min')}
         />
         <StatCard
-          label="Escalated on time" value={s?.escalatedOnTimePct.current != null ? `${s.escalatedOnTimePct.current}%` : '—'}
+          tone="blue" label="Escalated on time" value={s?.escalatedOnTimePct.current != null ? `${s.escalatedOnTimePct.current}%` : '—'}
           delta={s ? describeDelta(s.escalatedOnTimePct, 'points', 'higher') : null} footnote={split && sideSplit(split, (x) => x.escalatedOnTimePct, '%')}
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-5 xl:grid-cols-3">
         <Card title="Incidents over time" className="xl:col-span-2">
           {card(a.trend, 6, (t) => {
             const range = (b: string) => clampRange(drillRange(b, t.granularity), period)
@@ -115,7 +115,7 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-5 xl:grid-cols-3">
         {!side && (
           <Card title="Static vs Mobile" className="xl:col-span-2">
             {card(a.sideTrend, 6, (t) => (
@@ -130,7 +130,7 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-5 xl:grid-cols-3">
         {side !== 'MOBILE' && (
           <Card title="Top stations">
             {card(a.hotspots, 4, (hs) => <RankedList items={hotspotItems(hs, 'station')} onSelect={drillHotspot} empty="No static weighbridge incidents" />)}
@@ -147,7 +147,7 @@ export function DashboardPage() {
       </div>
 
       {side !== 'STATIC' && (
-        <div className="grid gap-4 xl:grid-cols-3">
+        <div className="grid gap-5 xl:grid-cols-3">
           <Card title="Top units">
             {card(a.vehicles, 4, (v) => (
               <RankedList items={v.map((x) => ({ key: x.key, label: x.label, count: x.count }))} onSelect={(id) => drill({ side: 'MOBILE', vehicleId: id })} empty="No mobile weighbridge incidents" />
@@ -164,7 +164,7 @@ export function DashboardPage() {
         </div>
       )}
 
-      <Card title="Needs your attention" actions={<Link to={openCriticalHighLink} className="text-sm font-medium text-brand-700 hover:underline">All open critical / high</Link>}>
+      <Card title="Needs your attention" actions={<Link to={openCriticalHighLink} className="text-sm font-medium text-link hover:underline">All open critical / high</Link>}>
         {a.attention.isError ? <Alert>{errorMessage(a.attention.error)}</Alert> : <DataTable
           columns={attentionColumns}
           rows={a.attention.data ?? []}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bucketLabel, clampRange, dayNightLink, drillRange, explorerLink, HEALTH_TILES, parseSide, resolvePeriod, sideSplit, sideTrendLink, weekLabel, withSide } from './chartData'
+import { bucketLabel, clampRange, dayNightLink, drillRange, explorerLink, HEALTH_TILES, parseSide, resolvePeriod, shiftColor, sideSplit, sideTrendLink, weekLabel, withSide } from './chartData'
 
 describe('dashboard chart helpers', () => {
   it('labels buckets and works out the range a click drills into', () => {
@@ -60,5 +60,10 @@ describe('dashboard chart helpers', () => {
       ['gpsUnknown', { gpsStatus: 'UNKNOWN' }],
       ['dashcamUnknown', { dashcamStatus: 'UNKNOWN' }],
     ])
+  })
+  it('colours Day and Night with their validated pair and anything else neutral', () => {
+    expect(shiftColor('DAY')).toBe('#0891b2')
+    expect(shiftColor('NIGHT')).toBe('#6d28d9')
+    expect(shiftColor('EVENING')).toBe('#64748b')
   })
 })

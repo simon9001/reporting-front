@@ -4,13 +4,13 @@ import { Link } from 'react-router'
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { SEVERITY_COLORS, SIDE_COLORS } from '../../components/badges'
 import { EmptyState } from '../../components/EmptyState'
-import { bucketLabel, HEALTH_TILES, weekLabel } from './chartData'
+import { bucketLabel, HEALTH_TILES, shiftColor, weekLabel } from './chartData'
 
 const axis = { fontSize: 11, fill: '#6b7280' }
 function SrTable({ caption, head, rows }: { caption: string; head: string[]; rows: ReactNode[][] }) {
   return (
     <div className="sr-only focus-within:not-sr-only focus-within:mt-3 focus-within:overflow-x-auto focus-within:rounded-lg focus-within:border focus-within:border-line focus-within:bg-white focus-within:p-2 focus-within:text-xs">
-    <table className="w-full text-left [&_a]:rounded [&_a]:text-brand-700 [&_a]:underline [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-2 [&_a]:focus-visible:outline-brand-600">
+    <table className="w-full text-left [&_a]:rounded [&_a]:text-link [&_a]:underline [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-2 [&_a]:focus-visible:outline-brand-600">
       <caption className="mb-1 text-left font-medium">{caption}</caption>
       <thead><tr>{head.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
       <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => (j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j}>{c}</td>))}</tr>)}</tbody>
@@ -19,7 +19,8 @@ function SrTable({ caption, head, rows }: { caption: string; head: string[]; row
   )
 }
 
-const tooltipStyle = { borderRadius: 8, border: '1px solid #eef0f2', fontSize: 12 }
+const tooltipStyle = { borderRadius: 12, border: 'none', boxShadow: '0 8px 24px -12px rgb(20 23 27 / 0.3)', fontSize: 12 }
+const GRID = '#eceef1'
 
 export function TrendChart({ data, onBucketClick, bucketHref }: { data: IncidentTrendDto; onBucketClick: (bucket: string) => void; bucketHref: (bucket: string) => string }) {
   if (data.points.every((p) => p.total === 0)) return <EmptyState title="No incidents in this period" />
@@ -30,15 +31,15 @@ export function TrendChart({ data, onBucketClick, bucketHref }: { data: Incident
     <div className="h-64" role="img" aria-label="Incidents over time by severity (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid vertical={false} stroke="#f1f5f9" />
+          <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd" />
           <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
           <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
           {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as Severity[]).map((s) => (
-            <Bar key={s} dataKey={s} name={s[0] + s.slice(1).toLowerCase()} stackId="sev" fill={SEVERITY_COLORS[s]} onClick={click} cursor="pointer" maxBarSize={28} />
+            <Bar key={s} dataKey={s} name={s[0] + s.slice(1).toLowerCase()} stackId="sev" fill={SEVERITY_COLORS[s]} stroke="#fff" strokeWidth={1.5} onClick={click} cursor="pointer" maxBarSize={28} />
           ))}
-          {data.granularity === 'day' && <Line dataKey="movingAvg" name="7-day average" stroke="#0f766e" strokeDasharray="4 3" dot={false} strokeWidth={2} />}
+          {data.granularity === 'day' && <Line dataKey="movingAvg" name="7-day average" stroke="#1c1f24" strokeDasharray="4 3" dot={false} strokeWidth={2} />}
         </ComposedChart>
       </ResponsiveContainer>
     </div>
@@ -96,8 +97,6 @@ export function SeverityDonut({ data, onSliceClick, bySide = false }: { data: Co
   )
 }
 
-const TEALS = ['#0f766e', '#14b8a6', '#2dd4bf', '#5eead4', '#99f6e4', '#ccfbf1']
-
 export function CategoryBars({ data, onBarClick, barHref, bySide = false }: { data: CountByDto[]; onBarClick: (key: string) => void; barHref: (key: string) => string; bySide?: boolean }) {
   if (data.length === 0) return <EmptyState title="No incidents" />
   const click = (_: unknown, index: number) => { const d = data[index]; if (d) onBarClick(d.key) }
@@ -112,12 +111,12 @@ export function CategoryBars({ data, onBarClick, barHref, bySide = false }: { da
           {bySide ? (
             <>
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="static" name="Static" stackId="side" fill={SIDE_COLORS.STATIC} maxBarSize={18} cursor="pointer" onClick={click} />
-              <Bar dataKey="mobile" name="Mobile" stackId="side" fill={SIDE_COLORS.MOBILE} radius={[0, 4, 4, 0]} maxBarSize={18} cursor="pointer" onClick={click} />
+              <Bar dataKey="static" name="Static" stackId="side" fill={SIDE_COLORS.STATIC} stroke="#fff" strokeWidth={1.5} maxBarSize={18} cursor="pointer" onClick={click} />
+              <Bar dataKey="mobile" name="Mobile" stackId="side" fill={SIDE_COLORS.MOBILE} stroke="#fff" strokeWidth={1.5} radius={[0, 4, 4, 0]} maxBarSize={18} cursor="pointer" onClick={click} />
             </>
           ) : (
             <Bar dataKey="count" name="Incidents" radius={[0, 4, 4, 0]} maxBarSize={18} cursor="pointer" label={{ position: 'right', fontSize: 11, fill: '#374151' }} onClick={click}>
-              {data.map((d, i) => <Cell key={d.key} fill={TEALS[i % TEALS.length]} />)}
+              {data.map((d, i) => <Cell key={d.key} fill={i === 0 ? '#f5c400' : '#1c1f24'} stroke={i === 0 ? '#1c1f24' : undefined} strokeWidth={i === 0 ? 1 : 0} />)}
             </Bar>
           )}
         </BarChart>
@@ -145,7 +144,7 @@ export function SideTrendChart({ data, onBarClick, barHref }: {
     <div className="h-56" role="img" aria-label="Static and mobile weighbridge incidents over time (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid vertical={false} stroke="#f1f5f9" />
+          <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd" />
           <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
           <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
@@ -176,9 +175,9 @@ export function RankedList({ items, onSelect, empty = 'No incidents' }: { items:
     <ul className="divide-y divide-slate-100">
       {items.map((i) => (
         <li key={i.key}>
-          <button type="button" onClick={() => onSelect(i.key)} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm hover:bg-brand-50/50">
+          <button type="button" onClick={() => onSelect(i.key)} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm transition duration-200 hover:bg-highway-50">
             <span><span className="font-medium text-slate-800">{i.label}</span>{i.detail && <span className="block text-xs text-slate-500">{i.detail}</span>}</span>
-            <span className="text-lg font-semibold text-slate-900">{i.count}</span>
+            <span className="text-lg font-semibold text-slate-900 tabular-nums">{i.count}</span>
           </button>
         </li>
       ))}
@@ -192,9 +191,9 @@ export function MobileHealthPanel({ data, onSelect }: { data: MobileHealthDto; o
     <ul className="grid grid-cols-2 gap-2">
       {HEALTH_TILES.map((t) => (
         <li key={t.key}>
-          <button type="button" onClick={() => onSelect(t.filter)} className="w-full rounded-lg border border-line p-3 text-left transition hover:border-brand-300">
+          <button type="button" onClick={() => onSelect(t.filter)} className="w-full rounded-xl bg-silver-100 p-3 text-left transition duration-200 hover:bg-highway-50 hover:shadow-[inset_0_0_0_1px_var(--color-highway-400)]">
             <span className="block text-xs text-slate-500">{t.label}</span>
-            <span className="text-xl font-semibold text-slate-900">{data[t.key]}</span>
+            <span className="text-xl font-semibold text-slate-900 tabular-nums">{data[t.key]}</span>
             <span className="text-xs text-slate-400"> of {data.total}</span>
           </button>
         </li>
@@ -212,18 +211,17 @@ export function DayNightBars({ data, onBarClick, barHref }: {
   if (data.points.every((p) => Object.values(p.counts).every((n) => n === 0))) return <EmptyState title="No incidents" />
   const rows = data.points.map((p) => ({ label: weekLabel(p.weekStart), ...p.counts }))
   const click = (code: string) => (_: unknown, index: number) => { const p = data.points[index]; if (p) onBarClick(p.weekStart, code) }
-  const colors = ['#5eead4', '#0f766e', '#14b8a6']
   return (
     <>
     <div className="h-48" role="img" aria-label="Incidents per week by shift (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid vertical={false} stroke="#f1f5f9" />
+          <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} />
           <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
           <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-          {data.shifts.map((s, i) => <Bar key={s.code} dataKey={s.code} name={s.name} fill={colors[i % colors.length]} radius={[4, 4, 0, 0]} maxBarSize={22} cursor="pointer" onClick={click(s.code)} />)}
+          {data.shifts.map((s) => <Bar key={s.code} dataKey={s.code} name={s.name} fill={shiftColor(s.code)} radius={[4, 4, 0, 0]} maxBarSize={22} cursor="pointer" onClick={click(s.code)} />)}
         </BarChart>
       </ResponsiveContainer>
     </div>
