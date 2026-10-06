@@ -3,7 +3,7 @@ import { DataTable } from '../../components/DataTable'
 import { EmptyState } from '../../components/EmptyState'
 import { FilterBar } from '../../components/FilterBar'
 import { Segmented } from '../../components/Segmented'
-import { Badge } from '../../components/ui'
+import { Badge, Card } from '../../components/ui'
 import { formatDate } from '../../lib/format'
 import { useUrlFilters } from '../../lib/urlFilters'
 import type { RosterRow } from './rosterGrid'
@@ -17,7 +17,8 @@ export function RosterListView({ rows, defs }: { rows: RosterRow[]; defs: ShiftD
     status: values.rstatus as 'planned' | 'unplanned' | undefined,
   })
   return (
-    <div className="space-y-4">
+    <Card>
+      <div className="space-y-4">
       <FilterBar search={values.rq ?? ''} onSearchChange={(v) => set({ rq: v || undefined })} placeholder="Search officer name…" canClear={!!(values.rq || values.rshift || values.rstatus)} onClear={() => set({ rq: undefined, rshift: undefined, rstatus: undefined })}>
         <Segmented label="Shift" value={values.rshift ?? ''} onChange={(v) => set({ rshift: v || undefined })} options={[{ value: '', label: 'All shifts' }, ...defs.filter((d) => d.isActive).map((d) => ({ value: d.code, label: d.name }))]} />
         <Segmented label="Planning" value={values.rstatus ?? ''} onChange={(v) => set({ rstatus: v || undefined })} options={[{ value: '', label: 'Any' }, { value: 'planned', label: 'Planned' }, { value: 'unplanned', label: 'Not planned' }]} />
@@ -34,6 +35,7 @@ export function RosterListView({ rows, defs }: { rows: RosterRow[]; defs: ShiftD
         rowKey={(r) => r.key}
         empty={<EmptyState title="No shifts match" />}
       />
-    </div>
+      </div>
+    </Card>
   )
 }

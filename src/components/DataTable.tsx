@@ -54,7 +54,7 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
           {rows.map((row) => (
             <tr
               key={rowKey(row)}
-              className={cx(onRowClick && 'cursor-pointer transition-colors duration-150 hover:bg-highway-50 focus:bg-highway-50 focus:shadow-[inset_3px_0_0_var(--color-highway-400)] focus:outline-none')}
+              className={cx(onRowClick && 'cursor-pointer transition-colors duration-150 hover:bg-highway-50 focus-visible:bg-highway-50')}
               onClick={onRowClick ? (e) => {
                 const inner = (e.target as HTMLElement).closest('a,button,input,select,textarea,label')
                 if (inner && inner !== e.currentTarget) return

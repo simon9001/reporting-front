@@ -11,6 +11,10 @@ describe('KPI tile tones', () => {
     expect(STAT_TONES.red.value).toBe('text-white')
     expect(STAT_TONES.blue.box).toContain('bg-static')
   })
+  it('keeps 12px muted text fully white on red and blue for AA contrast', () => {
+    expect(STAT_TONES.red.muted).toBe('text-white')
+    expect(STAT_TONES.blue.muted).toBe('text-white')
+  })
   it('never puts yellow text on a light tile', () => {
     for (const tone of ['plain', 'red', 'blue'] as const) {
       expect(STAT_TONES[tone].value).not.toMatch(/highway|brand-(1|2|3|5)00/)

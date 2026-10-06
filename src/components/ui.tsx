@@ -132,5 +132,5 @@ export function Table({ head, children }: { head: ReactNode[]; children: ReactNo
 }
 
 export function Kbd({ children }: { children: ReactNode }) {
-  return <kbd className="rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 font-sans text-[10px] font-medium text-current opacity-80">{children}</kbd>
+  return <kbd className="rounded-md border border-current/25 bg-current/10 px-1.5 py-0.5 font-sans text-[10px] font-medium text-current opacity-80">{children}</kbd>
 }
