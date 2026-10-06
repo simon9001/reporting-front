@@ -22,7 +22,7 @@ export function IncidentDrawer({ idOrRef, onClose }: { idOrRef: string | null; o
         title={
           <span className="flex items-center gap-3">
             <span>{incident?.ref ?? 'Incident'}</span>
-            {incident && <Link to={`/incidents/${incident.ref}`} className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline"><ExternalLink className="size-3.5" />Open full page</Link>}
+            {incident && <Link to={`/incidents/${incident.ref}`} className="inline-flex items-center gap-1 text-xs font-medium text-link hover:underline"><ExternalLink className="size-3.5" />Open full page</Link>}
           </span>
         }
         footer={incident?.canEdit ? <Button onClick={() => setEditing(true)}><Pencil className="size-4" />Edit</Button> : undefined}

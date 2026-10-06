@@ -35,7 +35,7 @@ export function LookupsPage() {
             role="tab"
             aria-selected={t === listType}
             onClick={() => setListType(t)}
-            className={cx('rounded-full px-3 py-1 text-sm', t === listType ? 'bg-brand-600 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-300')}
+            className={cx('rounded-[10px] px-3 py-1 text-sm', t === listType ? 'bg-asphalt-800 text-highway-400' : 'bg-white text-slate-700 ring-1 ring-slate-300')}
           >
             {LOOKUP_TYPE_LABELS[t]}
           </button>

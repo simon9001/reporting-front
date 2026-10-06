@@ -34,7 +34,7 @@ export function TrendChart({ data, onBucketClick, bucketHref }: { data: Incident
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd" />
           <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
+          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f1f2f4' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
           {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as Severity[]).map((s) => (
             <Bar key={s} dataKey={s} name={s[0] + s.slice(1).toLowerCase()} stackId="sev" fill={SEVERITY_COLORS[s]} stroke="#fff" strokeWidth={1.5} onClick={click} cursor="pointer" maxBarSize={28} />
@@ -107,7 +107,7 @@ export function CategoryBars({ data, onBarClick, barHref, bySide = false }: { da
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
           <XAxis type="number" hide allowDecimals={false} />
           <YAxis type="category" dataKey="label" width={110} tick={axis} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
+          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f1f2f4' }} />
           {bySide ? (
             <>
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
@@ -147,7 +147,7 @@ export function SideTrendChart({ data, onBarClick, barHref }: {
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd" />
           <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
+          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f1f2f4' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
           {INCIDENT_SIDES.map((s) => <Bar key={s} dataKey={s} name={INCIDENT_SIDE_SHORT[s]} fill={SIDE_COLORS[s]} radius={[4, 4, 0, 0]} maxBarSize={18} cursor="pointer" onClick={click(s)} />)}
         </BarChart>
@@ -219,7 +219,7 @@ export function DayNightBars({ data, onBarClick, barHref }: {
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} />
           <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f0faf8' }} />
+          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f1f2f4' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
           {data.shifts.map((s) => <Bar key={s.code} dataKey={s.code} name={s.name} fill={shiftColor(s.code)} radius={[4, 4, 0, 0]} maxBarSize={22} cursor="pointer" onClick={click(s.code)} />)}
         </BarChart>

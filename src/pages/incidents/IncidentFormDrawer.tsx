@@ -1,7 +1,7 @@
 import {
-  INCIDENT_SIDE_LABELS, INCIDENT_SIDES, INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, incidentInputSchema, LINK_STATUS_LABELS, LINK_STATUSES,
+  INCIDENT_SIDE_LABELS, INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, incidentInputSchema, LINK_STATUS_LABELS, LINK_STATUSES,
   MAX_ATTACHMENT_BYTES, MAX_ATTACHMENTS_PER_INCIDENT, SEVERITIES, SEVERITY_LABELS, VEHICLE_STATUS_LABELS, VEHICLE_STATUSES,
-  type IncidentDto, type IncidentSide, type IncidentStatus, type LinkStatus, type Severity, type VehicleStatus,
+  type IncidentDto, type IncidentStatus, type LinkStatus, type Severity, type VehicleStatus,
 } from '@sr/shared'
 import { ImagePlus, X } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
@@ -13,6 +13,7 @@ import { Drawer } from '../../components/Drawer'
 import { Segmented } from '../../components/Segmented'
 import { Alert, Button, Field, Input, Select, Textarea } from '../../components/ui'
 import { ApiError, errorMessage } from '../../lib/api'
+import { WeighbridgeChoice } from './WeighbridgeChoice'
 import { formatDateTime } from '../../lib/format'
 import { zodFieldErrors } from '../../lib/forms'
 import { defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, isResolved, mergeSnapshots, type IncidentFormState } from './incidentForm'
@@ -160,7 +161,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         {incident ? (
           <p className="flex items-center gap-2 text-sm text-slate-600"><SideBadge side={form.side} />{INCIDENT_SIDE_LABELS[form.side]} incident</p>
         ) : (
-          <Segmented<IncidentSide> label="Weighbridge" value={form.side} onChange={(v) => { set('side', v); setErrors({}) }} options={INCIDENT_SIDES.map((s) => ({ value: s, label: INCIDENT_SIDE_LABELS[s] }))} />
+          <WeighbridgeChoice value={form.side} onChange={(v) => { set('side', v); setErrors({}) }} />
         )}
 
         {mobile ? (
@@ -271,7 +272,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         </section>
 
         <section className="space-y-2 border-t border-line pt-5">
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600 hover:border-brand-300 hover:bg-brand-50/40">
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600 hover:border-asphalt-800 hover:bg-highway-50">
             <ImagePlus className="size-5 text-slate-400" aria-hidden />
             <span>Add snapshots <span className="text-slate-400">(photos, screenshots or PDF · up to 10 MB each)</span></span>
             <input type="file" multiple accept={ACCEPT} className="sr-only" aria-label="Add snapshots" onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />

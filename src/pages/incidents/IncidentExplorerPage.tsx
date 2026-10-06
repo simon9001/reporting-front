@@ -9,7 +9,7 @@ import { DateRangePicker } from '../../components/DateRangePicker'
 import { EmptyState } from '../../components/EmptyState'
 import { FilterBar } from '../../components/FilterBar'
 import { MultiSelect } from '../../components/MultiSelect'
-import { filterButtonClass } from '../../components/Popover'
+import { activeFilterClass, filterButtonClass } from '../../components/Popover'
 import { Segmented } from '../../components/Segmented'
 import { Alert, Badge, Button, Card, cx, PageHeader } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
@@ -109,7 +109,7 @@ export function IncidentExplorerPage() {
               type="button"
               aria-pressed={values.hasAttachments === 'true'}
               onClick={() => set({ hasAttachments: values.hasAttachments === 'true' ? undefined : 'true' })}
-              className={cx(filterButtonClass, values.hasAttachments === 'true' && 'border-brand-600 bg-brand-50 text-brand-700')}
+              className={cx(filterButtonClass, values.hasAttachments === 'true' && activeFilterClass)}
             >
               <Paperclip className="size-4" />Has snapshots
             </button>
@@ -136,7 +136,7 @@ export function IncidentExplorerPage() {
             onSortChange={(sort) => set({ sort })}
             onRowClick={(i) => set({ open: i.ref, ...keepPage })}
             rowLabel={(i) => `Open ${i.ref}`}
-            empty={<EmptyState title="No incidents match" description="Try a wider date range or fewer filters." action={hasActiveFilters(values) ? <button type="button" className="text-sm font-medium text-brand-700" onClick={clear}>Clear filters</button> : undefined} />}
+            empty={<EmptyState title="No incidents match" description="Try a wider date range or fewer filters." action={hasActiveFilters(values) ? <button type="button" className="text-sm font-medium text-link" onClick={clear}>Clear filters</button> : undefined} />}
           />
           {list.data && list.data.total > 0 && <Pagination page={list.data.page} pageSize={list.data.pageSize} total={list.data.total} onPageChange={(p) => set({ page: String(p) })} />}
         </div>

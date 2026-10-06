@@ -75,7 +75,7 @@ export function CommandPalette({ onClose, role }: { onClose: () => void; role: R
           // the input is the only tab stop in the dialog: keep focus inside it
           if (e.key === 'Tab') { e.preventDefault(); dialog.current?.querySelector<HTMLElement>('input')?.focus() }
         }}
-        className="w-full max-w-xl overflow-hidden rounded-xl bg-white shadow-2xl" onMouseDown={(e) => e.stopPropagation()}>
+        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2 border-b border-line px-4">
           <Search className="size-4 text-slate-400" aria-hidden />
           <input
@@ -108,7 +108,7 @@ export function CommandPalette({ onClose, role }: { onClose: () => void; role: R
               onMouseEnter={() => setActive(i)}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => go(r)}
-              className={cx('flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left text-sm', i === activeIndex ? 'bg-brand-50' : '')}
+              className={cx('flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left text-sm', i === activeIndex ? 'bg-highway-50' : '')}
             >
               {icon(r.kind)}
               <span className="min-w-0 flex-1 truncate font-medium text-slate-800">{r.label}</span>

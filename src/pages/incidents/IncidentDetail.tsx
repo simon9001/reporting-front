@@ -59,10 +59,10 @@ export function IncidentDetail({ incident: i }: { incident: IncidentDto; onEdit?
       </section>
       <section className="space-y-2">
         <h3 className="text-sm font-semibold text-slate-800">Timeline</h3>
-        <ol className="space-y-3 border-l-2 border-brand-200 pl-4">
+        <ol className="space-y-3 border-l-2 border-silver-200 pl-4">
           {i.events.map((e) => (
             <li key={e.id} className="relative text-sm">
-              <span className="absolute -left-[1.4rem] top-1.5 size-2.5 rounded-full bg-brand-600 ring-4 ring-white" aria-hidden />
+              <span className="absolute -left-[1.4rem] top-1.5 size-2.5 rounded-full bg-highway-400 ring-4 ring-white shadow-[0_0_0_1px_var(--color-asphalt-800)]" aria-hidden />
               <p className="text-slate-800">{e.summary}</p>
               <p className="text-xs text-slate-500">{formatDateTime(e.at)}{e.user && ` · ${e.user.fullName}`}</p>
             </li>

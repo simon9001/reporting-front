@@ -26,7 +26,7 @@ function SideCounts({ shiftId }: { shiftId: number }) {
 function ShiftIncidents({ title, shiftId, emptyHint, onOpen }: { title: ReactNode; shiftId: number; emptyHint?: string; onOpen: (ref: string) => void }) {
   const incidents = useIncidents({ shiftId, sort: '-occurredAt', pageSize: 25 })
   return (
-    <Card title={<>{title}<SideCounts shiftId={shiftId} /></>} actions={<Link to={`/incidents?shiftId=${shiftId}`} className="text-sm font-medium text-brand-700 hover:underline">Open in explorer</Link>}>
+    <Card title={<>{title}<SideCounts shiftId={shiftId} /></>} actions={<Link to={`/incidents?shiftId=${shiftId}`} className="text-sm font-medium text-link hover:underline">Open in explorer</Link>}>
       <DataTable
         columns={incidentColumns({ showShift: false })}
         rows={incidents.data?.items ?? []}

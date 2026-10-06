@@ -4,7 +4,7 @@ import { cx } from './ui'
 
 export const filterButtonClass = 'inline-flex h-10 items-center gap-2 rounded-[10px] border border-silver-200 bg-white px-3 text-sm text-asphalt-800 shadow-sm transition duration-200 hover:bg-silver-100'
 /** A filter trigger that currently filters something: charcoal chip with highway-yellow text. */
-export const activeFilterClass = 'border-asphalt-800 bg-asphalt-800 text-highway-400 hover:bg-asphalt-700'
+export const activeFilterClass = 'border-asphalt-800! bg-asphalt-800! text-highway-400! hover:bg-asphalt-700!'
 
 export function Popover({ label, children, align = 'left', buttonClassName, panelLabel }: {
   label: ReactNode

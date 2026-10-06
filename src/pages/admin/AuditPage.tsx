@@ -43,7 +43,7 @@ export function AuditPage() {
               {
                 key: 'details', header: 'Details', render: (r) => (r.before !== null || r.after !== null) && (
                   <details>
-                    <summary className="cursor-pointer text-sm font-medium text-brand-700">Show</summary>
+                    <summary className="cursor-pointer text-sm font-medium text-link">Show</summary>
                     <pre className="mt-2 max-w-xl overflow-x-auto rounded-md bg-slate-50 p-2 text-xs">{JSON.stringify({ before: r.before, after: r.after }, null, 2)}</pre>
                   </details>
                 ),
