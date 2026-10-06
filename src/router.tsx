@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router'
+import { createBrowserRouter } from 'react-router'
 import { ChangePasswordPage } from './auth/ChangePasswordPage'
 import { HomeRedirect, RequireAuth, RequireRole } from './auth/guards'
 import { LoginPage } from './auth/LoginPage'
@@ -12,6 +12,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { IncidentExplorerPage } from './pages/incidents/IncidentExplorerPage'
 import { IncidentPage } from './pages/incidents/IncidentPage'
 import { MyShiftPage } from './pages/MyShiftPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { OfficersPage } from './pages/OfficersPage'
 import { RosterPage } from './pages/roster/RosterPage'
 
@@ -41,9 +42,9 @@ export const router = createBrowserRouter([
               { path: 'admin/audit', element: <AuditPage /> },
             ],
           },
+          { path: '*', element: <NotFoundPage /> },
         ],
       },
     ],
   },
-  { path: '*', element: <Navigate to="/" replace /> },
 ])

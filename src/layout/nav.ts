@@ -33,3 +33,12 @@ export const NAV_GROUPS: NavGroup[] = [
 export function navFor(role: Role): NavGroup[] {
   return NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => i.roles.includes(role)) })).filter((g) => g.items.length > 0)
 }
+
+/** Top-bar title: the label of the deepest menu item (for this role) whose path matches; otherwise "Control Room". */
+export function pageTitleFor(pathname: string, role: Role): string {
+  const hit = navFor(role)
+    .flatMap((g) => g.items)
+    .filter((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
+    .sort((a, b) => b.to.length - a.to.length)[0]
+  return hit?.label ?? 'Control Room'
+}
