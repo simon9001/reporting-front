@@ -1,18 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-  /* brand = teal accent; every existing brand utility class (bg, text, border) picks this up */
-  --color-brand-50: #f0faf8;
-  --color-brand-100: #e6f4f2;
-  --color-brand-200: #ccfbf1;
-  --color-brand-300: #99f6e4;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0f766e;
-  --color-brand-700: #115e59;
-  --color-brand-800: #134e4a;
-  --color-page: #fcfcfd;
-  --color-line: #eef0f2;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-display: "Outfit Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* KeNHA palette: asphalt (logo's road), highway yellow (road markings), silver (logo rim) */
+  --color-asphalt-700: #2a2f36;
+  --color-asphalt-800: #1c1f24;
+  --color-asphalt-900: #14171b;
+  --color-highway-50: #fffbe6;
+  --color-highway-400: #f5c400;
+  --color-highway-500: #e0b000;
+  --color-silver-100: #f1f2f4;
+  --color-silver-200: #e4e6ea;
+  --color-silver-400: #a3a9b2;
+
+  /* Series colours, validated with the dataviz palette checker against the light page */
+  --color-static: #2563eb;
+  --color-mobile: #b98a00;
+  --color-day: #0891b2;
+  --color-night: #6d28d9;
+  --color-link: #1d4ed8;
+
+  /* brand-* keeps every existing utility working: pale yellows for tints, charcoal for ink and buttons */
+  --color-brand-50: #fffbe6;
+  --color-brand-100: #fff3b8;
+  --color-brand-200: #ffe680;
+  --color-brand-300: #f5c400;
+  --color-brand-500: #e0b000;
+  --color-brand-600: #1c1f24;
+  --color-brand-700: #14171b;
+  --color-brand-800: #0f1114;
+
+  --color-page: #f1f2f4;
+  --color-line: #e4e6ea;
+
+  --shadow-card: 0 1px 2px rgb(20 23 27 / 0.06), 0 8px 24px -12px rgb(20 23 27 / 0.18);
+}
+
+/* A dashed highway-yellow road marking, used for progress bars and accents. */
+@utility road-dash {
+  background-image: repeating-linear-gradient(90deg, var(--color-highway-400) 0 14px, transparent 14px 22px);
 }
 
 html,
@@ -21,11 +49,33 @@ body,
   height: 100%;
 }
 
-body {
-  @apply bg-page text-slate-800 antialiased;
+html {
+  scroll-behavior: smooth;
 }
 
+body {
+  @apply bg-page font-sans text-asphalt-800 antialiased;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* Yellow ring with a charcoal halo: visible on white cards, silver page, charcoal sidebar and colour tiles. */
 :focus-visible {
-  outline: 2px solid var(--color-brand-600);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-highway-400);
+  outline-offset: 0;
+  box-shadow: 0 0 0 4px var(--color-asphalt-800);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }
