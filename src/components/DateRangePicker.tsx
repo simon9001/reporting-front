@@ -1,7 +1,7 @@
 import { CalendarDays } from 'lucide-react'
 import { useState } from 'react'
 import { periodLabel, PRESET_LABELS, presetPeriod, PRESETS, type Period } from '../lib/periods'
-import { Popover } from './Popover'
+import { activeFilterClass, Popover } from './Popover'
 import { Button, Input } from './ui'
 
 function RangePanel({ value, onChange, today, allowAll, close }: { value: Period | null; onChange: (p: Period | null) => void; today: string; allowAll: boolean; close: () => void }) {
@@ -30,7 +30,7 @@ function RangePanel({ value, onChange, today, allowAll, close }: { value: Period
 
 export function DateRangePicker({ value, onChange, today, allowAll = true }: { value: Period | null; onChange: (p: Period | null) => void; today: string; allowAll?: boolean }) {
   return (
-    <Popover label={<><CalendarDays className="size-4 text-slate-400" aria-hidden />{value ? periodLabel(value, today) : 'All dates'}</>}>
+    <Popover buttonClassName={value ? activeFilterClass : undefined} label={<><CalendarDays className="size-4 text-slate-400" aria-hidden />{value ? periodLabel(value, today) : 'All dates'}</>}>
       {(close) => <RangePanel value={value} onChange={onChange} today={today} allowAll={allowAll} close={close} />}
     </Popover>
   )

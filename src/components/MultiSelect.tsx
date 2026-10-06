@@ -1,11 +1,11 @@
-import { Popover } from './Popover'
+import { activeFilterClass, Popover } from './Popover'
 
 export interface Option { value: string; label: string }
 
 export function MultiSelect({ label, options, value, onChange }: { label: string; options: Option[]; value: string[]; onChange: (v: string[]) => void }) {
   const summary = value.length === 0 ? 'Any' : value.length === 1 ? options.find((o) => o.value === value[0])?.label ?? '1 selected' : `${value.length} selected`
   return (
-    <Popover label={<span><span className="text-slate-500">{label}:</span> {summary}</span>}>
+    <Popover buttonClassName={value.length > 0 ? activeFilterClass : undefined} label={<span><span className="opacity-70">{label}:</span> {summary}</span>}>
       {() => (
         <div className="max-h-72 space-y-0.5 overflow-y-auto">
           {options.map((o) => (
@@ -19,7 +19,7 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
               {o.label}
             </label>
           ))}
-          {value.length > 0 && <button type="button" className="mt-1 px-2 text-xs font-medium text-brand-700" onClick={() => onChange([])}>Clear</button>}
+          {value.length > 0 && <button type="button" className="mt-1 px-2 text-xs font-medium text-link" onClick={() => onChange([])}>Clear</button>}
         </div>
       )}
     </Popover>

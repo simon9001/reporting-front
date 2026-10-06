@@ -29,11 +29,11 @@ export function FilterBar({ search, onSearchChange, placeholder = 'Search…', c
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={placeholder}
-          className="h-9 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm shadow-sm placeholder:text-slate-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
+          className="h-10 w-full rounded-[10px] border border-silver-200 bg-white pl-9 pr-3 text-sm shadow-sm transition duration-200 placeholder:text-slate-400 focus:border-asphalt-800 focus:outline-none focus:ring-2 focus:ring-highway-400/70"
         />
       </label>
       {children}
-      {canClear && onClear && <button type="button" onClick={onClear} className="h-9 px-2 text-sm font-medium text-brand-700 hover:text-brand-800">Clear</button>}
+      {canClear && onClear && <button type="button" onClick={onClear} className="h-10 px-2 text-sm font-medium text-link hover:underline">Clear</button>}
       {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
     </div>
   )

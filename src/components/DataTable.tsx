@@ -30,17 +30,17 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
   if (loading) return <Skeleton rows={6} />
   if (rows.length === 0) return <>{empty ?? <EmptyState title="Nothing to show" />}</>
   return (
-    <div className="overflow-x-auto">
+    <div className="-mx-5 overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="border-b border-line text-left text-xs text-slate-500">
+        <thead className="sticky top-0 z-10 bg-silver-100 text-left text-xs text-slate-500">
           <tr>
             {columns.map((c) => {
               const active = !!c.sortKey && (sort === c.sortKey || sort === `-${c.sortKey}`)
               const desc = sort === `-${c.sortKey}`
               return (
-                <th key={c.key} className={cx('px-3 py-2.5 font-medium', c.className)} aria-sort={active ? (desc ? 'descending' : 'ascending') : undefined}>
+                <th key={c.key} className={cx('px-5 py-3 font-semibold first:pl-5', c.className)} aria-sort={active ? (desc ? 'descending' : 'ascending') : undefined}>
                   {c.sortKey && onSortChange ? (
-                    <button type="button" className="inline-flex items-center gap-1 hover:text-slate-800" onClick={() => onSortChange(nextSort(sort, c.sortKey!))}>
+                    <button type="button" className="inline-flex items-center gap-1 transition hover:text-asphalt-800" onClick={() => onSortChange(nextSort(sort, c.sortKey!))}>
                       {c.header}
                       {active && (desc ? <ArrowDown className="size-3" /> : <ArrowUp className="size-3" />)}
                     </button>
@@ -50,11 +50,11 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
             })}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-silver-200">
           {rows.map((row) => (
             <tr
               key={rowKey(row)}
-              className={cx(onRowClick && 'cursor-pointer hover:bg-brand-50/60 focus:bg-brand-50 focus:outline-none')}
+              className={cx(onRowClick && 'cursor-pointer transition-colors duration-150 hover:bg-highway-50 focus:bg-highway-50 focus:shadow-[inset_3px_0_0_var(--color-highway-400)] focus:outline-none')}
               onClick={onRowClick ? (e) => {
                 const inner = (e.target as HTMLElement).closest('a,button,input,select,textarea,label')
                 if (inner && inner !== e.currentTarget) return
@@ -70,7 +70,7 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
               tabIndex={onRowClick ? 0 : undefined}
               aria-label={rowLabel?.(row)}
             >
-              {columns.map((c) => <td key={c.key} className={cx('px-3 py-2.5 align-middle', c.className)}>{c.render(row)}</td>)}
+              {columns.map((c) => <td key={c.key} className={cx('px-5 py-3 align-middle', c.className)}>{c.render(row)}</td>)}
             </tr>
           ))}
         </tbody>
@@ -84,11 +84,11 @@ export function Pagination({ page, pageSize, total, onPageChange }: { page: numb
   const first = total === 0 ? 0 : Math.min(total, (page - 1) * pageSize + 1)
   const last = Math.min(total, page * pageSize)
   return (
-    <div className="flex items-center justify-between gap-2 border-t border-line px-3 pt-3 text-sm text-slate-500">
+    <div className="flex items-center justify-between gap-2 border-t border-silver-200 px-1 pt-3 text-sm text-slate-500">
       <span>Showing {first}–{last} of {total}</span>
       <div className="flex items-center gap-1">
         <IconButton label="Previous page" disabled={page <= 1} onClick={() => onPageChange(page - 1)}><ChevronLeft /></IconButton>
-        <span>Page {page} of {pages}</span>
+        <span className="tabular-nums">Page {page} of {pages}</span>
         <IconButton label="Next page" disabled={page >= pages} onClick={() => onPageChange(page + 1)}><ChevronRight /></IconButton>
       </div>
     </div>

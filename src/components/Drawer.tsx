@@ -59,21 +59,21 @@ export function Drawer({ open, onClose, title, children, footer, wide }: {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-slate-900/30" onClick={() => closeRef.current()} aria-hidden />
+      <div className="absolute inset-0 bg-asphalt-900/40 backdrop-blur-[2px]" onClick={() => closeRef.current()} aria-hidden />
       <div
         ref={panel}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={cx('relative flex h-full w-full flex-col bg-white shadow-2xl outline-none', wide ? 'sm:max-w-3xl' : 'sm:max-w-xl')}
+        className={cx('relative flex h-full w-full flex-col bg-white shadow-2xl outline-none sm:rounded-l-2xl', wide ? 'sm:max-w-3xl' : 'sm:max-w-xl')}
       >
-        <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
-          <div id={titleId} className="min-w-0 text-base font-semibold text-slate-900">{title}</div>
+        <header className="flex items-center justify-between gap-3 border-b border-silver-200 px-6 py-4">
+          <div id={titleId} className="min-w-0 font-display text-lg font-semibold text-asphalt-900">{title}</div>
           <IconButton label="Close" onClick={() => closeRef.current()}><X /></IconButton>
         </header>
-        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
-        {footer && <footer className="border-t border-line px-5 py-3">{footer}</footer>}
+        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        {footer && <footer className="border-t border-silver-200 bg-white px-6 py-3 sm:rounded-bl-2xl">{footer}</footer>}
       </div>
     </div>
   )

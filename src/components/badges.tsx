@@ -11,7 +11,7 @@ const SEVERITY_CLASS: Record<Severity, string> = {
   MEDIUM: 'bg-amber-100 text-amber-800',
   LOW: 'bg-green-100 text-green-800',
 }
-const pill = 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium'
+const pill = 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium'
 
 export function SeverityBadge({ severity }: { severity: Severity }) {
   return (
@@ -33,8 +33,8 @@ export function EscalationBadge({ result, minutes }: { result: EscalationResult;
   return <span className={cx(pill, tone)}>{ESCALATION_RESULT_LABELS[result]}{minutes != null ? ` · ${minutes} min` : ''}</span>
 }
 
-export const SIDE_COLORS: Record<IncidentSide, string> = { STATIC: '#0f766e', MOBILE: '#7c3aed' }
-const SIDE_CLASS: Record<IncidentSide, string> = { STATIC: 'bg-teal-50 text-teal-800 ring-1 ring-teal-200', MOBILE: 'bg-violet-50 text-violet-800 ring-1 ring-violet-200' }
+export const SIDE_COLORS: Record<IncidentSide, string> = { STATIC: '#2563eb', MOBILE: '#b98a00' }
+const SIDE_CLASS: Record<IncidentSide, string> = { STATIC: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200', MOBILE: 'bg-amber-50 text-amber-800 ring-1 ring-amber-300' }
 
 export function SideBadge({ side }: { side: IncidentSide }) {
   return <span className={cx(pill, SIDE_CLASS[side])}>{INCIDENT_SIDE_SHORT[side]}</span>

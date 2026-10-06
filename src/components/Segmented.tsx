@@ -16,7 +16,7 @@ export function Segmented<V extends string>({ label, options, value, onChange }:
     refs.current[next]?.focus()
   }
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex h-9 overflow-hidden rounded-md border border-slate-200 bg-white text-sm shadow-sm">
+    <div role="radiogroup" aria-label={label} className="inline-flex h-10 gap-0.5 rounded-[10px] border border-silver-200 bg-white p-0.5 text-sm shadow-sm">
       {options.map((o, i) => (
         <button
           key={o.value}
@@ -30,7 +30,7 @@ export function Segmented<V extends string>({ label, options, value, onChange }:
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); move(i, 1) }
             else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); move(i, -1) }
           }}
-          className={cx('px-3 font-medium', value === o.value ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-50')}
+          className={cx('rounded-lg px-3 font-medium transition duration-200', value === o.value ? 'bg-asphalt-800 text-white shadow-sm' : 'text-slate-600 hover:bg-silver-100 hover:text-asphalt-800')}
         >
           {o.label}
         </button>
