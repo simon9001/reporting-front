@@ -30,6 +30,6 @@ export function StatCard({ label, value, delta, hint, footnote, onClick, tone = 
   )
   const base = cx('rounded-2xl p-5 text-left', t.box)
   return onClick
-    ? <button type="button" onClick={onClick} className={cx(base, 'transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-px')}>{body}</button>
+    ? <button type="button" onClick={onClick} className={cx(base, 'transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-px focus-visible:focus-halo')}>{body}</button>
     : <div className={base}>{body}</div>
 }

@@ -78,7 +78,7 @@ export function SnapshotGallery({ attachments, onDelete }: { attachments: Incide
                 type="button"
                 aria-label={`Remove ${a.originalName}`}
                 onClick={() => { if (confirm(`Remove ${a.originalName}?`)) onDelete(a) }}
-                className="absolute right-1 top-1 rounded-md bg-white/90 p-1 text-slate-600 opacity-0 shadow group-hover:opacity-100 focus:opacity-100"
+                className="absolute right-1 top-1 rounded-md bg-white/90 p-1 text-slate-600 opacity-0 shadow focus-visible:focus-halo group-hover:opacity-100 focus:opacity-100"
               >
                 <Trash2 className="size-3.5" />
               </button>

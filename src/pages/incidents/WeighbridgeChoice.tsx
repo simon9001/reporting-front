@@ -39,7 +39,7 @@ export function WeighbridgeChoice({ value, onChange }: { value: IncidentSide; on
             }}
             className={cx(
               'flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition duration-200 active:scale-[.99]',
-              checked ? 'border-asphalt-800 bg-highway-50 shadow-card' : 'border-silver-200 bg-white hover:border-silver-400',
+              checked ? 'border-asphalt-800 bg-highway-50 shadow-card focus-visible:focus-halo' : 'border-silver-200 bg-white hover:border-silver-400',
             )}
           >
             <span className={cx('flex size-10 shrink-0 items-center justify-center rounded-xl', checked ? 'bg-highway-400 text-asphalt-900' : 'bg-silver-100 text-slate-500')}>

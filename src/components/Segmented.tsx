@@ -30,7 +30,7 @@ export function Segmented<V extends string>({ label, options, value, onChange }:
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); move(i, 1) }
             else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); move(i, -1) }
           }}
-          className={cx('rounded-lg px-3 font-medium transition duration-200', value === o.value ? 'bg-asphalt-800 text-white shadow-sm' : 'text-slate-600 hover:bg-silver-100 hover:text-asphalt-800')}
+          className={cx('rounded-lg px-3 font-medium transition duration-200', value === o.value ? 'bg-asphalt-800 text-white shadow-sm focus-visible:focus-halo' : 'text-slate-600 hover:bg-silver-100 hover:text-asphalt-800')}
         >
           {o.label}
         </button>
