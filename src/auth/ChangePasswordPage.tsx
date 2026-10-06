@@ -34,23 +34,30 @@ export function ChangePasswordPage() {
   })
 
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
-      <form onSubmit={onSubmit} noValidate aria-label="Change password" className="w-full max-w-sm space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-lg font-semibold text-brand-800">Change your password</h1>
-        {forced && <Alert tone="info">You must choose a new password before you continue.</Alert>}
-        {errors.root?.message && <Alert>{errors.root.message}</Alert>}
-        <Field label="Current password" error={errors.currentPassword?.message}>
-          <Input type="password" autoComplete="current-password" {...form.register('currentPassword')} />
-        </Field>
-        <Field label="New password" error={errors.newPassword?.message}>
-          <Input type="password" autoComplete="new-password" {...form.register('newPassword')} />
-        </Field>
-        <Field label="Confirm new password" error={errors.confirmPassword?.message}>
-          <Input type="password" autoComplete="new-password" {...form.register('confirmPassword')} />
-        </Field>
-        <p className="text-xs text-slate-500">At least 10 characters.</p>
-        <Button type="submit" className="w-full" disabled={isSubmitting}>Change password</Button>
-      </form>
+    <div className="relative flex min-h-dvh items-center justify-center bg-asphalt-900 bg-cover bg-center p-4" style={{ backgroundImage: "url('/kenha-roads.webp')" }}>
+      <div className="absolute inset-0 bg-asphalt-900/45" aria-hidden />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="h-1.5 bg-highway-400" aria-hidden />
+        <div className="px-8 pb-8 pt-7">
+          <img src="/kenha-logo.png" alt="KeNHA" className="mx-auto h-24 w-auto" />
+          <form onSubmit={onSubmit} noValidate aria-label="Change password" className="mt-6 space-y-4">
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-asphalt-900">Change your password</h1>
+            {forced && <Alert tone="info">You must choose a new password before you continue.</Alert>}
+            {errors.root?.message && <Alert>{errors.root.message}</Alert>}
+            <Field label="Current password" error={errors.currentPassword?.message}>
+              <Input type="password" autoComplete="current-password" {...form.register('currentPassword')} />
+            </Field>
+            <Field label="New password" error={errors.newPassword?.message}>
+              <Input type="password" autoComplete="new-password" {...form.register('newPassword')} />
+            </Field>
+            <Field label="Confirm new password" error={errors.confirmPassword?.message}>
+              <Input type="password" autoComplete="new-password" {...form.register('confirmPassword')} />
+            </Field>
+            <p className="text-xs text-slate-500">At least 10 characters.</p>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>Change password</Button>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }

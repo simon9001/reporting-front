@@ -45,7 +45,7 @@ export function Popover({ label, children, align = 'left', buttonClassName, pane
           tabIndex={-1}
           role="dialog"
           aria-label={panelLabel ?? (typeof label === 'string' ? label : 'Options')}
-          className={cx('absolute z-30 mt-1 min-w-56 rounded-xl border border-silver-200 bg-white p-2 shadow-card outline-none', align === 'right' ? 'right-0' : 'left-0')}
+          className={cx('absolute z-30 mt-1 min-w-56 rounded-xl border border-silver-200 bg-white p-2 shadow-card outline-none focus-visible:shadow-none', align === 'right' ? 'right-0' : 'left-0')}
         >
           {children(() => setOpen(false))}
         </div>

@@ -94,7 +94,7 @@ export function CommandPalette({ onClose, role }: { onClose: () => void; role: R
             aria-autocomplete="list"
             aria-activedescendant={results.length > 0 ? optionId(activeIndex) : undefined}
             aria-label="Search"
-            className="h-12 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+            className="h-12 flex-1 bg-transparent text-sm outline-none focus-visible:outline-none focus-visible:shadow-none placeholder:text-slate-400"
           />
           <Kbd>Esc</Kbd>
         </div>

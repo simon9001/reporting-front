@@ -117,7 +117,7 @@ export function RosterPage() {
       )}
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <table className="min-w-full text-sm">
-          <thead className="bg-brand-800 text-left text-xs uppercase tracking-wide text-white">
+          <thead className="bg-asphalt-900 text-left text-xs uppercase tracking-wide text-white">
             <tr>
               <th className="px-3 py-2">Date</th>
               {activeDefs.map((d) => <th key={d.code} className="px-3 py-2">{d.name} ({d.startTime}–{d.endTime})</th>)}

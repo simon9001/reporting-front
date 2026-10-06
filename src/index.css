@@ -64,10 +64,12 @@ h3 {
 }
 
 /* Yellow ring with a charcoal halo: visible on white cards, silver page, charcoal sidebar and colour tiles. */
-:focus-visible {
-  outline: 2px solid var(--color-highway-400);
-  outline-offset: 0;
-  box-shadow: 0 0 0 4px var(--color-asphalt-800);
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-highway-400);
+    outline-offset: 0;
+    box-shadow: 0 0 0 4px var(--color-asphalt-800);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

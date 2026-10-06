@@ -40,7 +40,7 @@ function Viewer({ images, index, setIndex, onClose }: { images: IncidentAttachme
   }, [])
   const img = images[index]!
   return (
-    <div ref={box} tabIndex={-1} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4 outline-none" role="dialog" aria-modal="true" aria-label="Snapshot viewer">
+    <div ref={box} tabIndex={-1} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4 outline-none focus-visible:shadow-none" role="dialog" aria-modal="true" aria-label="Snapshot viewer">
       <IconButton label="Close viewer" className="absolute right-4 top-4 text-white hover:bg-white/10" onClick={onClose}><X /></IconButton>
       {images.length > 1 && <IconButton label="Previous snapshot" className="absolute left-4 text-white hover:bg-white/10" onClick={() => setIndex((index - 1 + images.length) % images.length)}><ChevronLeft /></IconButton>}
       <figure className="max-h-full max-w-5xl">

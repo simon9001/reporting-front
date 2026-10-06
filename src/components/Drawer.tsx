@@ -66,7 +66,7 @@ export function Drawer({ open, onClose, title, children, footer, wide }: {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={cx('relative flex h-full w-full flex-col bg-white shadow-2xl outline-none sm:rounded-l-2xl', wide ? 'sm:max-w-3xl' : 'sm:max-w-xl')}
+        className={cx('relative flex h-full w-full flex-col bg-white shadow-2xl outline-none focus-visible:shadow-none sm:rounded-l-2xl', wide ? 'sm:max-w-3xl' : 'sm:max-w-xl')}
       >
         <header className="flex items-center justify-between gap-3 border-b border-silver-200 px-6 py-4">
           <div id={titleId} className="min-w-0 font-display text-lg font-semibold text-asphalt-900">{title}</div>

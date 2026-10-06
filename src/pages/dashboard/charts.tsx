@@ -10,7 +10,7 @@ const axis = { fontSize: 11, fill: '#6b7280' }
 function SrTable({ caption, head, rows }: { caption: string; head: string[]; rows: ReactNode[][] }) {
   return (
     <div className="sr-only focus-within:not-sr-only focus-within:mt-3 focus-within:overflow-x-auto focus-within:rounded-lg focus-within:border focus-within:border-line focus-within:bg-white focus-within:p-2 focus-within:text-xs">
-    <table className="w-full text-left [&_a]:rounded [&_a]:text-link [&_a]:underline [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-2 [&_a]:focus-visible:outline-brand-600">
+    <table className="w-full text-left [&_a]:rounded [&_a]:text-link [&_a]:underline">
       <caption className="mb-1 text-left font-medium">{caption}</caption>
       <thead><tr>{head.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
       <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => (j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j}>{c}</td>))}</tr>)}</tbody>
@@ -37,7 +37,7 @@ export function TrendChart({ data, onBucketClick, bucketHref }: { data: Incident
           <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f1f2f4' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
           {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as Severity[]).map((s) => (
-            <Bar key={s} dataKey={s} name={s[0] + s.slice(1).toLowerCase()} stackId="sev" fill={SEVERITY_COLORS[s]} stroke="#fff" strokeWidth={1.5} onClick={click} cursor="pointer" maxBarSize={28} />
+            <Bar key={s} dataKey={s} name={s[0] + s.slice(1).toLowerCase()} stackId="sev" fill={SEVERITY_COLORS[s]} stroke="#fff" strokeWidth={2} onClick={click} cursor="pointer" maxBarSize={28} />
           ))}
           {data.granularity === 'day' && <Line dataKey="movingAvg" name="7-day average" stroke="#1c1f24" strokeDasharray="4 3" dot={false} strokeWidth={2} />}
         </ComposedChart>
@@ -111,8 +111,8 @@ export function CategoryBars({ data, onBarClick, barHref, bySide = false }: { da
           {bySide ? (
             <>
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="static" name="Static" stackId="side" fill={SIDE_COLORS.STATIC} stroke="#fff" strokeWidth={1.5} maxBarSize={18} cursor="pointer" onClick={click} />
-              <Bar dataKey="mobile" name="Mobile" stackId="side" fill={SIDE_COLORS.MOBILE} stroke="#fff" strokeWidth={1.5} radius={[0, 4, 4, 0]} maxBarSize={18} cursor="pointer" onClick={click} />
+              <Bar dataKey="static" name="Static" stackId="side" fill={SIDE_COLORS.STATIC} stroke="#fff" strokeWidth={2} maxBarSize={18} cursor="pointer" onClick={click} />
+              <Bar dataKey="mobile" name="Mobile" stackId="side" fill={SIDE_COLORS.MOBILE} stroke="#fff" strokeWidth={2} radius={[0, 4, 4, 0]} maxBarSize={18} cursor="pointer" onClick={click} />
             </>
           ) : (
             <Bar dataKey="count" name="Incidents" radius={[0, 4, 4, 0]} maxBarSize={18} cursor="pointer" label={{ position: 'right', fontSize: 11, fill: '#374151' }} onClick={click}>

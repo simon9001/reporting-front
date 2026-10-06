@@ -39,7 +39,7 @@ export function AppShell() {
   const sidebar = (
     <div className="flex h-full flex-col bg-asphalt-900 text-white">
       <div className="flex items-center gap-3 px-5 pb-5 pt-6">
-        <img src="/kenha-logo.png" alt="KeNHA" className="h-10 w-auto" />
+        <span className="rounded-lg bg-white p-1"><img src="/kenha-logo.png" alt="KeNHA" className="h-10 w-auto" /></span>
         <span className="font-display text-base font-semibold leading-tight">Control<br />Room</span>
       </div>
       <div className="mx-5 h-1 rounded-full road-dash opacity-80" aria-hidden />
@@ -55,7 +55,7 @@ export function AppShell() {
                 className={({ isActive }) => cx(
                   'relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-sm transition duration-200',
                   isActive
-                    ? 'bg-highway-400 font-semibold text-asphalt-900 before:absolute before:-left-3 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r before:bg-highway-400'
+                    ? 'bg-highway-400 font-semibold text-asphalt-900 before:absolute before:-left-3 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r before:bg-highway-400 focus-visible:outline-white focus-visible:shadow-[0_0_0_4px_var(--color-asphalt-900)]'
                     : 'text-white/80 hover:bg-asphalt-700 hover:text-white',
                 )}
               >
@@ -111,7 +111,7 @@ export function AppShell() {
               <UserMenu user={user} onSignOut={signOut} />
             </div>
           </header>
-          <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] flex-1 space-y-6 p-5 outline-none md:p-8">
+          <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] flex-1 space-y-6 p-5 outline-none focus-visible:shadow-none md:p-8">
             <Outlet />
           </main>
         </div>
