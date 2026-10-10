@@ -56,7 +56,7 @@ export function DashboardPage() {
   const noIncidents = (k: HotspotKind) => (k === 'station' ? 'No static weighbridge incidents' : 'No mobile weighbridge incidents')
 
   const attentionColumns = [
-    { key: 'ref', header: 'Incident', render: (i: AttentionItemDto) => <span className="font-semibold text-slate-900">{i.ref}</span> },
+    { key: 'ref', header: 'Incident', render: (i: AttentionItemDto) => <span className="whitespace-nowrap font-semibold text-slate-900">{i.ref}</span> },
     { key: 'side', header: 'Side', render: (i: AttentionItemDto) => <SideBadge side={i.side} /> },
     { key: 'when', header: 'When', render: (i: AttentionItemDto) => <span className="whitespace-nowrap">{formatDateTime(i.occurredAt)}</span> },
     { key: 'where', header: 'Station / unit', render: (i: AttentionItemDto) => (i.vehicle ? <span><span className="font-medium">{i.vehicle}</span><span className="block text-xs text-slate-500">{i.location}</span></span> : i.location) },

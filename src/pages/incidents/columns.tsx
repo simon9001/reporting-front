@@ -16,7 +16,7 @@ function Where({ i }: { i: IncidentListItemDto }) {
 
 export function incidentColumns({ showShift = true, side }: { showShift?: boolean; side?: IncidentSide } = {}): Column<IncidentListItemDto>[] {
   const cols: Column<IncidentListItemDto>[] = [
-    { key: 'ref', header: 'ID', sortKey: 'ref', render: (i) => <span className="font-semibold text-slate-900">{i.ref}</span> },
+    { key: 'ref', header: 'ID', sortKey: 'ref', render: (i) => <span className="whitespace-nowrap font-semibold text-slate-900">{i.ref}</span> },
     { key: 'side', header: 'Side', sortKey: 'side', render: (i) => <SideBadge side={i.side} /> },
     { key: 'occurredAt', header: 'Date / time', sortKey: 'occurredAt', className: 'whitespace-nowrap', render: (i) => formatDateTime(i.occurredAt) },
     { key: 'location', header: placeHeader(side), render: (i) => <Where i={i} /> },

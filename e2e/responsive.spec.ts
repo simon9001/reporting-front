@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, request, test, type Page } from '@playwright/test'
 
 const WIDTHS: [number, number][] = [[360, 780], [390, 844], [768, 1024], [1024, 768], [1366, 768], [1920, 1080], [2560, 1440]]
 
@@ -12,12 +12,49 @@ async function signIn(page: Page, email: string, password: string) {
 
 async function noHorizontalScroll(page: Page, name: string, w: number, h: number) {
   await page.waitForLoadState('load')
+  // Wait for real content: no Skeleton ("Loading") or Spinner ("Loading…") placeholders left, then two frames to settle layout.
+  // Queries mount after `load`, so a single zero count can be a gap before they start: require it to stay zero for 1s.
+  const loading = page.locator('[role="status"][aria-label^="Loading"]')
+  await expect(async () => {
+    await expect(loading).toHaveCount(0, { timeout: 1000 })
+    await page.waitForTimeout(1000)
+    await expect(loading).toHaveCount(0, { timeout: 1000 })
+  }).toPass({ timeout: 30_000 })
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), { message: `${name} scrolls sideways at ${w}px` }).toBe(true)
   await page.screenshot({ path: `e2e-screens/${name}-${w}x${h}.png`, fullPage: true })
 }
 
 test.beforeAll(() => {
   execSync('pnpm --filter backend e2e:prepare', { stdio: 'inherit' })
+})
+
+// Real content: the prepared database has no incidents, so seed some (long text included) as the supervisor.
+test.beforeAll(async () => {
+  test.setTimeout(120_000)
+  const api = await request.newContext({ baseURL: 'http://localhost:5174' })
+  const login = await api.post('/api/auth/login', { data: { email: 'e2e-sup@test.local', password: 'SupervisorPass2026' } })
+  expect(login.ok()).toBe(true)
+  const lookups = (await (await api.get('/api/config/lookups')).json()) as { id: number; listType: string; value: string }[]
+  const vehicles = (await (await api.get('/api/config/vehicles')).json()) as { id: number; unitId: string }[]
+  const pick = (listType: string, value?: string) => lookups.find((l) => l.listType === listType && (!value || l.value === value))!.id
+  const at = (min: number) => new Date(Date.now() - min * 60_000).toISOString()
+  const long = 'Weighbridge indicator lost communication with the controller repeatedly during peak hours and the operator reported intermittent faults across several lanes while trucks queued beyond the gate; engineers were called and the matter was escalated for follow up. '.repeat(1).slice(0, 300)
+  const bodies: Record<string, unknown>[] = [
+    { side: 'STATIC', occurredAt: at(10), locationId: pick('LOCATION'), locationDetail: 'Lane 3 inbound weighbridge cabin, north gantry, behind the old customs shed', categoryId: pick('CATEGORY'), severity: 'CRITICAL', description: long, status: 'OPEN' },
+    { side: 'STATIC', occurredAt: at(25), locationId: pick('LOCATION'), categoryId: pick('CATEGORY'), severity: 'HIGH', description: 'Camera WB04 went offline', status: 'OPEN' },
+    { side: 'STATIC', occurredAt: at(40), locationId: pick('LOCATION'), categoryId: pick('CATEGORY'), severity: 'LOW', description: 'Minor glare on lane 2 camera', status: 'OPEN' },
+    {
+      side: 'MOBILE', occurredAt: at(15), vehicleId: vehicles.find((v) => v.unitId === 'KDG 143S')!.id, locationText: 'Mlolongo',
+      vehicleStatus: 'ONLINE', gpsStatus: 'ONLINE', dashcamStatus: 'OFFLINE', platformId: pick('PLATFORM', 'Tracksolid'),
+      categoryId: pick('CATEGORY', 'Tracksolid'), severity: 'HIGH', description: 'Inside camera blank on KDG 143S', status: 'OPEN',
+    },
+  ]
+  for (const data of bodies) {
+    const res = await api.post('/api/incidents', { data })
+    expect(res.ok(), await res.text()).toBe(true)
+  }
+  await api.dispose()
 })
 
 test('no page scrolls sideways at any supported width', async ({ browser }) => {
@@ -37,7 +74,10 @@ test('no page scrolls sideways at any supported width', async ({ browser }) => {
     if (w < 1024) {
       await page.getByRole('button', { name: /^Filters/ }).click()
       await expect(page.getByRole('dialog', { name: 'Filters' })).toBeVisible()
+      await page.getByRole('dialog', { name: 'Filters' }).getByRole('button', { name: /^Severity:/ }).click()
+      await expect(page.getByRole('checkbox').first()).toBeInViewport({ ratio: 1 })
       await noHorizontalScroll(page, 'explorer-filters', w, h)
+      await page.keyboard.press('Escape')
       await page.keyboard.press('Escape')
     }
     await page.goto('/roster')
@@ -88,7 +128,7 @@ test('the dashboard date picker is not clipped on phones', async ({ browser }) =
   await signIn(page, 'e2e-dd@test.local', 'DirectorPass2026')
   // The date picker's trigger is a button labelled with periodLabel(): "This month" by default (the Period switch's "This month" is a radio).
   await page.getByRole('button', { name: 'This month' }).click()
-  await expect(page.getByRole('button', { name: 'Apply' })).toBeInViewport()
+  await expect(page.getByRole('button', { name: 'Apply' })).toBeInViewport({ ratio: 1 })
   await ctx.close()
 })
 
