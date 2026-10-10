@@ -75,7 +75,7 @@ export function CommandPalette({ onClose, role }: { onClose: () => void; role: R
           // the input is the only tab stop in the dialog: keep focus inside it
           if (e.key === 'Tab') { e.preventDefault(); dialog.current?.querySelector<HTMLElement>('input')?.focus() }
         }}
-        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl" onMouseDown={(e) => e.stopPropagation()}>
+        className="w-full max-w-xl overflow-hidden rounded-lg bg-white shadow-card" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2 border-b border-line px-4">
           <Search className="size-4 text-slate-400" aria-hidden />
           <input
