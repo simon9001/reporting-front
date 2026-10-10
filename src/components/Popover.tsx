@@ -2,7 +2,7 @@ import { ChevronDown } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { cx } from './ui'
 
-export const filterButtonClass = 'inline-flex h-10 items-center gap-2 rounded-[10px] border border-silver-200 bg-white px-3 text-sm text-asphalt-800 shadow-sm transition duration-200 hover:bg-silver-100 focus-visible:focus-halo'
+export const filterButtonClass = 'inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-silver-200 bg-white px-3 text-[13px] text-asphalt-800 transition duration-150 hover:bg-silver-100 focus-visible:focus-halo sm:h-8'
 /** A filter trigger that currently filters something: charcoal chip with highway-yellow text. */
 export const activeFilterClass = 'border-asphalt-800! bg-asphalt-800! text-highway-400! hover:bg-asphalt-700!'
 
@@ -45,7 +45,7 @@ export function Popover({ label, children, align = 'left', buttonClassName, pane
           tabIndex={-1}
           role="dialog"
           aria-label={panelLabel ?? (typeof label === 'string' ? label : 'Options')}
-          className={cx('absolute z-30 mt-1 min-w-56 rounded-xl border border-silver-200 bg-white p-2 shadow-card outline-none focus-visible:shadow-none', align === 'right' ? 'right-0' : 'left-0')}
+          className={cx('absolute z-30 mt-1 min-w-56 rounded-lg border border-silver-200 bg-white p-2 shadow-card outline-none focus-visible:shadow-none', align === 'right' ? 'right-0' : 'left-0')}
         >
           {children(() => setOpen(false))}
         </div>

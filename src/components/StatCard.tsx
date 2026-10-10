@@ -18,18 +18,18 @@ export function StatCard({ label, value, delta, hint, footnote, onClick, tone = 
   const plain = tone === 'plain'
   const body = (
     <>
-      <p className={cx('text-sm font-medium', t.muted)}>{label}</p>
-      <p className={cx('mt-2 font-display text-4xl font-semibold leading-none tracking-tight tabular-nums', t.value)}>{value}</p>
-      <p className="mt-2 min-h-4 text-xs">
+      <p className={cx('text-xs font-medium', t.muted)}>{label}</p>
+      <p className={cx('mt-1 font-display text-2xl font-semibold leading-none tracking-tight tabular-nums', t.value)}>{value}</p>
+      <p className="mt-1.5 min-h-4 text-xs">
         {/* On colour tiles the good/bad colours would vanish, so deltas use the tile's muted ink and their text carries the meaning. */}
         {delta && <span className={plain ? toneClass[delta.tone] : cx('font-medium', t.muted)}>{delta.text}</span>}
         {hint && <span className={t.muted}>{delta ? ' · ' : ''}{hint}</span>}
       </p>
-      {footnote && <p className={cx('mt-1 text-xs tabular-nums', t.muted)}>{footnote}</p>}
+      {footnote && <p className={cx('mt-0.5 text-xs tabular-nums', t.muted)}>{footnote}</p>}
     </>
   )
-  const base = cx('rounded-2xl p-5 text-left', t.box)
+  const base = cx('rounded-lg p-3 text-left', t.box)
   return onClick
-    ? <button type="button" onClick={onClick} className={cx(base, 'transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-px focus-visible:focus-halo')}>{body}</button>
+    ? <button type="button" onClick={onClick} className={cx(base, 'transition duration-150 hover:brightness-95 active:translate-y-px focus-visible:focus-halo')}>{body}</button>
     : <div className={base}>{body}</div>
 }

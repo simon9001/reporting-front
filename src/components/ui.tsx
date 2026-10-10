@@ -6,10 +6,10 @@ export function cx(...classes: (string | false | null | undefined)[]): string {
 
 type ButtonVariant = 'primary' | 'accent' | 'secondary' | 'danger' | 'ghost'
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary: 'bg-asphalt-800 text-white shadow-sm hover:bg-asphalt-700',
-  accent: 'bg-highway-400 text-asphalt-900 shadow-sm hover:bg-highway-500',
-  secondary: 'border border-silver-200 bg-white text-asphalt-800 shadow-sm hover:bg-silver-100',
-  danger: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
+  primary: 'bg-asphalt-800 text-white hover:bg-asphalt-700',
+  accent: 'bg-highway-400 text-asphalt-900 hover:bg-highway-500',
+  secondary: 'border border-silver-200 bg-white text-asphalt-800 hover:bg-silver-100',
+  danger: 'bg-red-600 text-white hover:bg-red-700',
   ghost: 'text-slate-600 hover:bg-silver-100 hover:text-asphalt-800',
 }
 
@@ -18,7 +18,7 @@ export function Button({ variant = 'primary', className, type = 'button', ...pro
     <button
       type={type}
       className={cx(
-        'inline-flex h-10 items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition duration-200 active:translate-y-px active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 focus-visible:focus-halo',
+        'inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 text-[13px] font-semibold transition duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 focus-visible:focus-halo sm:h-8 [&_svg]:size-4',
         buttonVariants[variant],
         className,
       )}
@@ -33,24 +33,24 @@ export function IconButton({ label, className, type = 'button', ...props }: Comp
       type={type}
       aria-label={label}
       title={label}
-      className={cx('inline-flex size-9 items-center justify-center rounded-[10px] text-slate-500 transition duration-200 hover:bg-silver-100 hover:text-asphalt-800 active:scale-95 [&_svg]:size-4', className)}
+      className={cx('inline-flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition duration-150 hover:bg-silver-100 hover:text-asphalt-800 [&_svg]:size-4', className)}
       {...props}
     />
   )
 }
 
-const control = 'block h-10 w-full rounded-[10px] border border-silver-200 bg-white px-3 text-sm text-asphalt-800 shadow-sm transition duration-200 placeholder:text-slate-400 focus:border-asphalt-800 focus:outline-none focus:ring-2 focus:ring-highway-400/70 disabled:bg-silver-100 disabled:text-slate-500'
+const control = 'block h-9 w-full rounded-md border border-silver-200 bg-white px-3 text-[13px] text-asphalt-800 transition duration-150 placeholder:text-slate-400 focus:border-asphalt-800 focus:outline-none focus:ring-2 focus:ring-highway-400/70 disabled:bg-silver-100 disabled:text-slate-500 sm:h-8'
 
 export const Input = ({ className, ...props }: ComponentProps<'input'>) => <input className={cx(control, className)} {...props} />
 export const Select = ({ className, ...props }: ComponentProps<'select'>) => <select className={cx(control, className)} {...props} />
-export const Textarea = ({ className, ...props }: ComponentProps<'textarea'>) => <textarea className={cx(control, 'h-auto py-2', className)} {...props} />
+export const Textarea = ({ className, ...props }: ComponentProps<'textarea'>) => <textarea className={cx(control, 'h-auto py-1.5 sm:h-auto', className)} {...props} />
 
 /** Label wraps only the title and the control, so the control's accessible name is exactly `label`. */
 export function Field({ label, error, hint, children }: { label: string; error?: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <label className="block space-y-1.5">
-        <span className="text-sm font-medium text-asphalt-800">{label}</span>
+    <div className="space-y-1">
+      <label className="block space-y-1">
+        <span className="text-[13px] font-medium text-asphalt-800">{label}</span>
         {children}
       </label>
       {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
@@ -61,14 +61,14 @@ export function Field({ label, error, hint, children }: { label: string; error?:
 
 export function Card({ title, actions, children, className }: { title?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cx('rounded-2xl bg-white shadow-card', className)}>
+    <section className={cx('min-w-0 rounded-lg border border-silver-200 bg-white', className)}>
       {(title || actions) && (
-        <header className="flex flex-wrap items-center justify-between gap-2 px-5 pt-5">
-          {title && <h2 className="font-display text-[15px] font-semibold text-asphalt-800">{title}</h2>}
+        <header className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3">
+          {title && <h2 className="text-[13px] font-semibold text-asphalt-800">{title}</h2>}
           {actions}
         </header>
       )}
-      <div className="p-5">{children}</div>
+      <div className="p-4">{children}</div>
     </section>
   )
 }
@@ -83,7 +83,7 @@ const tones: Record<Tone, string> = {
 }
 
 export function Badge({ tone = 'slate', className, children }: { tone?: Tone; className?: string; children: ReactNode }) {
-  return <span className={cx('inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium', tones[tone], className)}>{children}</span>
+  return <span className={cx('inline-flex items-center gap-1 whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium', tones[tone], className)}>{children}</span>
 }
 
 const alertTones = {
@@ -94,14 +94,14 @@ const alertTones = {
 }
 
 export function Alert({ tone = 'error', children }: { tone?: keyof typeof alertTones; children: ReactNode }) {
-  return <div role={tone === 'error' ? 'alert' : 'status'} className={cx('rounded-xl border px-3.5 py-2.5 text-sm', alertTones[tone])}>{children}</div>
+  return <div role={tone === 'error' ? 'alert' : 'status'} className={cx('rounded-md border px-3 py-2 text-[13px]', alertTones[tone])}>{children}</div>
 }
 
 export function Spinner({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div className="space-y-2 p-4" role="status" aria-label={label}>
+    <div className="space-y-1.5 p-4" role="status" aria-label={label}>
       <span className="sr-only">{label}</span>
-      {[0, 1, 2].map((i) => <div key={i} className="h-9 animate-pulse rounded-[10px] bg-silver-200" />)}
+      {[0, 1, 2].map((i) => <div key={i} className="h-8 animate-pulse rounded-md bg-silver-200" />)}
     </div>
   )
 }
@@ -109,11 +109,11 @@ export function Spinner({ label = 'Loading…' }: { label?: string }) {
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-asphalt-900">{title}</h1>
-        {description && <p className="mt-1 max-w-[70ch] text-sm text-slate-500">{description}</p>}
+      <div className="min-w-0">
+        <h1 className="font-display text-xl font-semibold tracking-tight text-asphalt-900">{title}</h1>
+        {description && <p className="mt-0.5 max-w-[70ch] text-[13px] text-slate-500">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>}
     </div>
   )
 }
@@ -121,9 +121,9 @@ export function PageHeader({ title, description, actions }: { title: string; des
 export function Table({ head, children }: { head: ReactNode[]; children: ReactNode }) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full text-sm">
+      <table className="min-w-full text-[13px]">
         <thead className="bg-silver-100 text-left text-xs font-semibold text-slate-500">
-          <tr>{head.map((h, i) => <th key={i} className="px-3 py-2.5 font-medium">{h}</th>)}</tr>
+          <tr>{head.map((h, i) => <th key={i} className="h-8 px-3 font-semibold">{h}</th>)}</tr>
         </thead>
         <tbody className="divide-y divide-silver-200">{children}</tbody>
       </table>
@@ -132,5 +132,5 @@ export function Table({ head, children }: { head: ReactNode[]; children: ReactNo
 }
 
 export function Kbd({ children }: { children: ReactNode }) {
-  return <kbd className="rounded-md border border-current/25 bg-current/10 px-1.5 py-0.5 font-sans text-[10px] font-medium text-current opacity-80">{children}</kbd>
+  return <kbd className="rounded border border-current/25 bg-current/10 px-1 py-px font-sans text-[10px] font-medium text-current opacity-80">{children}</kbd>
 }

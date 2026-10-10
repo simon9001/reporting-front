@@ -11,7 +11,7 @@ const SEVERITY_CLASS: Record<Severity, string> = {
   MEDIUM: 'bg-amber-100 text-amber-800',
   LOW: 'bg-green-100 text-green-800',
 }
-const pill = 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium'
+const pill = 'inline-flex items-center gap-1.5 whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium'
 
 export function SeverityBadge({ severity }: { severity: Severity }) {
   return (

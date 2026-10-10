@@ -20,6 +20,9 @@ describe('KPI tile tones', () => {
       expect(STAT_TONES[tone].value).not.toMatch(/highway|brand-(1|2|3|5)00/)
     }
   })
+  it('has no drop shadows on any tile', () => {
+    for (const t of Object.values(STAT_TONES)) expect(t.box).not.toMatch(/shadow/)
+  })
   it('colours the weighbridge sides with the validated blue/gold pair', () => {
     expect(SIDE_COLORS).toEqual({ STATIC: '#2563eb', MOBILE: '#b98a00' })
   })
