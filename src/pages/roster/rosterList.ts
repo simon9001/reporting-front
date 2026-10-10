@@ -30,3 +30,11 @@ export function rosterListRows(rows: RosterRow[], defs: ShiftDefinitionDto[], f:
     (!f.status || (f.status === 'planned') === r.planned),
   )
 }
+
+export type RosterView = 'grid' | 'list'
+
+/** `?view=` wins; without it, phones (below md) open the list and larger screens the grid. */
+export function rosterViewFor(param: string | undefined, compact: boolean): RosterView {
+  if (param === 'list' || param === 'grid') return param
+  return compact ? 'list' : 'grid'
+}

@@ -9,8 +9,10 @@ import { Alert, Button, cx, PageHeader, Select, Spinner } from '../../components
 import { errorMessage } from '../../lib/api'
 import { formatDate, todayLocal } from '../../lib/format'
 import { useUrlFilters } from '../../lib/urlFilters'
+import { useCompact } from '../../lib/useBelow'
 import { useNow } from '../../lib/useNow'
 import { RosterListView } from './RosterListView'
+import { rosterViewFor } from './rosterList'
 import { buildRosterRows, cellHasEnded, collectChanges, draftsOutsideView, removeSavedDrafts, type Draft, type RosterCell, weekdayLabel } from './rosterGrid'
 
 const DAYS = 14
@@ -30,7 +32,8 @@ export function RosterPage() {
   const remove = useDeleteRosterShift()
   const now = useNow()
   const view = useUrlFilters(['view'])
-  const isList = view.values.view === 'list'
+  const compact = useCompact()
+  const isList = rosterViewFor(view.values.view, compact) === 'list'
   const [drafts, setDrafts] = useState(new Map<string, Draft>())
   const [swapRoles, setSwapRoles] = useState(true)
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
@@ -78,27 +81,27 @@ export function RosterPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader
         title="Roster"
         description={canEdit ? 'Choose the Shift Supervisor and the Control Room Officer for each shift.' : 'Who is on duty for each shift.'}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Segmented label="View" value={isList ? 'list' : 'grid'} onChange={(v) => view.set({ view: v === 'list' ? 'list' : undefined })} options={[{ value: 'grid', label: 'Grid' }, { value: 'list', label: 'List' }]} />
+            <Segmented label="View" value={isList ? 'list' : 'grid'} onChange={(v) => view.set({ view: v })} options={[{ value: 'grid', label: 'Grid' }, { value: 'list', label: 'List' }]} />
             <Button variant="secondary" onClick={() => setWeekStart(addDays(weekStart, -7))}>← Previous week</Button>
             <Button variant="secondary" onClick={() => setWeekStart(weekStartMonday(todayLocal()))}>This week</Button>
             <Button variant="secondary" onClick={() => setWeekStart(addDays(weekStart, 7))}>Next week →</Button>
           </div>
         }
       />
-      <p className="text-sm text-slate-600">{formatDate(weekStart)} – {formatDate(to)}</p>
+      <p className="text-[13px] text-slate-600">{formatDate(weekStart)} – {formatDate(to)}</p>
       {message && <Alert tone={message.tone}>{message.text}</Alert>}
       {isList && canEdit && drafts.size > 0 && (
         <Alert tone="warning">
           <span className="flex flex-wrap items-center gap-3">
             You have unsaved roster changes ({drafts.size}). They are kept while you browse the list.
             <Button onClick={save} disabled={entries.length === 0 || problems.size > 0 || upsert.isPending}>Save changes</Button>
-            <Button variant="secondary" onClick={() => view.set({ view: undefined })}>Back to Grid</Button>
+            <Button variant="secondary" onClick={() => view.set({ view: 'grid' })}>Back to Grid</Button>
           </span>
         </Alert>
       )}

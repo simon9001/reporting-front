@@ -35,6 +35,18 @@ export function AuditPage() {
           {record.invalid && <p role="status" className="text-sm text-amber-700">Enter a whole record number greater than zero, such as 42. The filter is not applied yet.</p>}
           {log.isError && <Alert>{errorMessage(log.error)}</Alert>}
           <DataTable<AuditLogDto>
+            mobile={(r) => (
+              <span className="block space-y-1">
+                <span className="flex items-center justify-between gap-2"><Badge>{r.action}</Badge><span className="whitespace-nowrap text-xs text-slate-500">{formatDateTime(r.at)}</span></span>
+                <span className="block truncate text-slate-600">{r.user?.fullName ?? 'System'} · {r.entity}{r.entityId ? ` #${r.entityId}` : ''}</span>
+                {(r.before !== null || r.after !== null) && (
+                  <details>
+                    <summary className="cursor-pointer text-[13px] font-medium text-link">Show</summary>
+                    <pre className="mt-2 overflow-x-auto rounded-md bg-slate-50 p-2 text-xs">{JSON.stringify({ before: r.before, after: r.after }, null, 2)}</pre>
+                  </details>
+                )}
+              </span>
+            )}
             columns={[
               { key: 'at', header: 'When', className: 'whitespace-nowrap', render: (r) => formatDateTime(r.at) },
               { key: 'who', header: 'Who', render: (r) => r.user?.fullName ?? 'System' },

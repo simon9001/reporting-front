@@ -36,12 +36,12 @@ export function ChangePasswordPage() {
   return (
     <div className="relative flex min-h-dvh items-center justify-center bg-asphalt-900 bg-cover bg-center p-4" style={{ backgroundImage: "url('/kenha-roads.webp')" }}>
       <div className="absolute inset-0 bg-asphalt-900/45" aria-hidden />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="h-1.5 bg-highway-400" aria-hidden />
-        <div className="px-8 pb-8 pt-7">
-          <img src="/kenha-logo.png" alt="KeNHA" className="mx-auto h-24 w-auto" />
-          <form onSubmit={onSubmit} noValidate aria-label="Change password" className="mt-6 space-y-4">
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-asphalt-900">Change your password</h1>
+      <div className="relative w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-card">
+        <div className="h-1 bg-highway-400" aria-hidden />
+        <div className="p-6">
+          <img src="/kenha-logo.png" alt="KeNHA" className="mx-auto h-16 w-auto" />
+          <form onSubmit={onSubmit} noValidate aria-label="Change password" className="mt-5 space-y-4">
+            <h1 className="font-display text-xl font-semibold tracking-tight text-asphalt-900">Change your password</h1>
             {forced && <Alert tone="info">You must choose a new password before you continue.</Alert>}
             {errors.root?.message && <Alert>{errors.root.message}</Alert>}
             <Field label="Current password" error={errors.currentPassword?.message}>

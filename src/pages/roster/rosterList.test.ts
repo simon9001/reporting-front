@@ -1,7 +1,7 @@
 import type { ShiftDefinitionDto, ShiftDto } from '@sr/shared'
 import { describe, expect, it } from 'vitest'
 import { buildRosterRows } from './rosterGrid'
-import { rosterListRows } from './rosterList'
+import { rosterListRows, rosterViewFor } from './rosterList'
 
 const defs: ShiftDefinitionDto[] = [
   { id: 1, code: 'DAY', name: 'Day', startTime: '08:00', endTime: '17:00', sortOrder: 1, isActive: true },
@@ -13,6 +13,13 @@ const shift = {
 } as ShiftDto
 
 describe('rosterListRows', () => {
+  it('opens the list on small screens unless the URL asks for a view', () => {
+    expect(rosterViewFor(undefined, true)).toBe('list')
+    expect(rosterViewFor(undefined, false)).toBe('grid')
+    expect(rosterViewFor('grid', true)).toBe('grid')
+    expect(rosterViewFor('list', false)).toBe('list')
+    expect(rosterViewFor('nonsense', false)).toBe('grid')
+  })
   const rows = buildRosterRows('2030-01-07', 2, defs, [shift])
   it('lists every date and shift with planned status', () => {
     const list = rosterListRows(rows, defs, {})

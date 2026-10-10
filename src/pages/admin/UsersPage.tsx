@@ -27,7 +27,7 @@ export function UsersPage() {
   const [notice, setNotice] = useState<string | null>(null)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader title="Users" description="Officers, the Deputy Director and administrators who can sign in." />
       <CreateUserCard />
       {notice && <Alert tone="warning">{notice}</Alert>}
@@ -51,6 +51,16 @@ export function UsersPage() {
           </FilterBar>
           {users.isError && <Alert>{errorMessage(users.error)}</Alert>}
           <DataTable
+            mobile={(u) => (
+              <span className="block space-y-1">
+                <span className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium text-slate-900">{u.fullName}</span>
+                  <span className="flex flex-wrap gap-1">{u.isActive ? <Badge tone="green">Active</Badge> : <Badge>Inactive</Badge>}{u.mustChangePassword && <Badge tone="amber">Must change password</Badge>}</span>
+                </span>
+                <span className="block truncate text-slate-500">{u.email} · {ROLE_LABELS[u.role]}</span>
+                <span className="flex gap-1"><Button variant="ghost" onClick={() => setEditing(u)}>Edit</Button><Button variant="ghost" onClick={() => setResetting(u)}>Reset password</Button></span>
+              </span>
+            )}
             columns={[
               { key: 'name', header: 'Name', render: (u) => <span className="font-medium text-slate-900">{u.fullName}</span> },
               { key: 'email', header: 'Email', render: (u) => u.email },

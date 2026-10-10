@@ -24,6 +24,15 @@ export function RosterListView({ rows, defs }: { rows: RosterRow[]; defs: ShiftD
         <Segmented label="Planning" value={values.rstatus ?? ''} onChange={(v) => set({ rstatus: v || undefined })} options={[{ value: '', label: 'Any' }, { value: 'planned', label: 'Planned' }, { value: 'unplanned', label: 'Not planned' }]} />
       </FilterBar>
       <DataTable
+        mobile={(r) => (
+          <span className="block space-y-0.5">
+            <span className="flex items-center justify-between gap-2">
+              <span className="font-medium text-asphalt-900">{formatDate(r.shiftDate)} · {r.shiftName}</span>
+              {!r.planned ? <Badge tone="amber">Not planned</Badge> : r.needsReassign ? <Badge tone="red">Reassign</Badge> : <Badge tone="green">Planned</Badge>}
+            </span>
+            <span className="block truncate text-slate-600">Supervisor {r.supervisor ?? '—'} · Officer {r.officer ?? '—'}</span>
+          </span>
+        )}
         columns={[
           { key: 'date', header: 'Date', className: 'whitespace-nowrap', render: (r) => formatDate(r.shiftDate) },
           { key: 'shift', header: 'Shift', render: (r) => r.shiftName },

@@ -14,7 +14,7 @@ export function SettingsPage() {
   const settings = useSettings()
   const failed = defs.error ?? rules.error ?? settings.error
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader title="Settings" description="Shift times, escalation rules and system settings." />
       {failed && <Alert>{errorMessage(failed)}</Alert>}
       {defs.data ? <ShiftTimesCard defs={defs.data} /> : !failed && <Spinner />}

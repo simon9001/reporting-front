@@ -27,7 +27,7 @@ export function VehiclesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader title="Mobile weighbridge vehicles" description="Registered vehicles / units, so every check uses the same ID." />
       <Card title="Add vehicle">
         <div className="grid gap-4 md:grid-cols-[1fr_2fr_auto] md:items-end">

@@ -25,7 +25,7 @@ export function LookupsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader title="Lists" description="The choices offered in dropdowns. Retired values are deactivated, never deleted, so old records stay correct." />
       <div className="flex flex-wrap gap-2" role="tablist">
         {LOOKUP_TYPES.map((t) => (
@@ -35,7 +35,7 @@ export function LookupsPage() {
             role="tab"
             aria-selected={t === listType}
             onClick={() => setListType(t)}
-            className={cx('rounded-[10px] px-3 py-1 text-sm', t === listType ? 'bg-asphalt-800 text-highway-400' : 'bg-white text-slate-700 ring-1 ring-slate-300')}
+            className={cx('rounded-md px-2.5 py-1 text-[13px]', t === listType ? 'bg-asphalt-800 text-highway-400' : 'bg-white text-slate-700 ring-1 ring-slate-300')}
           >
             {LOOKUP_TYPE_LABELS[t]}
           </button>

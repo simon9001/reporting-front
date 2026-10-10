@@ -24,6 +24,12 @@ export function OfficersPage() {
           </FilterBar>
           {users.isError && <Alert>{errorMessage(users.error)}</Alert>}
           <DataTable
+            mobile={(u) => (
+              <span className="block space-y-0.5">
+                <span className="flex items-center justify-between gap-2"><span className="font-medium text-slate-900">{u.fullName}</span>{u.isActive ? <Badge tone="green">Active</Badge> : <Badge>Inactive</Badge>}</span>
+                <span className="block truncate text-slate-500">{u.email} · {u.lastLoginAt ? formatDateTime(u.lastLoginAt) : 'Never signed in'}</span>
+              </span>
+            )}
             columns={[
               { key: 'name', header: 'Name', render: (u) => <span className="font-medium text-slate-900">{u.fullName}</span> },
               { key: 'email', header: 'Email', render: (u) => u.email },
