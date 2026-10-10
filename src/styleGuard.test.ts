@@ -4,7 +4,7 @@ import { join, relative, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /** Folders (relative to src/) whose source must follow the compact density scale. Later tasks extend this list. */
-const SCOPE: string[] = ['components', 'layout']
+const SCOPE: string[] = ['components', 'layout', 'pages/dashboard']
 /** The only files allowed to use a drop shadow: overlays and the sign-in cards. */
 const SHADOW_OK: string[] = ['components/Drawer.tsx', 'components/Popover.tsx', 'layout/CommandPalette.tsx', 'layout/UserMenu.tsx', 'layout/NavOverlay.tsx']
 

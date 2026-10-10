@@ -19,7 +19,7 @@ function SrTable({ caption, head, rows }: { caption: string; head: string[]; row
   )
 }
 
-const tooltipStyle = { borderRadius: 12, border: 'none', boxShadow: '0 8px 24px -12px rgb(20 23 27 / 0.3)', fontSize: 12 }
+const tooltipStyle = { borderRadius: 8, border: 'none', boxShadow: '0 8px 24px -12px rgb(20 23 27 / 0.3)', fontSize: 12 }
 const GRID = '#eceef1'
 
 export function TrendChart({ data, onBucketClick, bucketHref }: { data: IncidentTrendDto; onBucketClick: (bucket: string) => void; bucketHref: (bucket: string) => string }) {
@@ -28,7 +28,7 @@ export function TrendChart({ data, onBucketClick, bucketHref }: { data: Incident
   const click = (_: unknown, index: number) => { const p = rows[index]; if (p) onBucketClick(p.bucket) }
   return (
     <>
-    <div className="h-64" role="img" aria-label="Incidents over time by severity (table follows)">
+    <div className="h-[200px]" role="img" aria-label="Incidents over time by severity (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke={GRID} />
@@ -57,8 +57,8 @@ export function SeverityDonut({ data, onSliceClick, bySide = false }: { data: Co
   if (total === 0) return <EmptyState title="No incidents" />
   return (
     <div>
-      <div className="flex items-center gap-4">
-        <div className="relative h-44 w-44 shrink-0" role="img" aria-label={`Incidents by severity, ${total} in total`}>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative size-[140px] shrink-0" role="img" aria-label={`Incidents by severity, ${total} in total`}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie data={data} dataKey="count" nameKey="label" innerRadius="62%" outerRadius="95%" paddingAngle={1.5} stroke="none" onClick={(_, index) => { const d = data[index]; if (d) onSliceClick(d.key as Severity) }} cursor="pointer">
@@ -68,11 +68,11 @@ export function SeverityDonut({ data, onSliceClick, bySide = false }: { data: Co
             </PieChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-semibold text-slate-900">{total}</span>
+            <span className="font-display text-xl font-semibold text-slate-900">{total}</span>
             <span className="text-xs text-slate-500">incidents</span>
           </div>
         </div>
-        <ul className="space-y-2 text-sm">
+        <ul className="space-y-1 text-[13px]">
           {data.map((d) => (
             <li key={d.key}>
               <button type="button" className="flex items-center gap-2 hover:underline" onClick={() => onSliceClick(d.key as Severity)}>
@@ -87,7 +87,7 @@ export function SeverityDonut({ data, onSliceClick, bySide = false }: { data: Co
         <SrTable caption="Incidents by severity" head={['Severity', 'Incidents']} rows={data.map((d) => [d.label, d.count])} />
       </div>
       {bySide && (
-        <table className="mt-3 w-full text-left text-xs">
+        <table className="mt-2 w-full text-left text-xs">
           <caption className="sr-only">Incidents by severity for static and mobile weighbridges</caption>
           <thead className="text-slate-500"><tr><th scope="col" className="py-1 font-medium">Severity</th><th scope="col" className="py-1 font-medium">Static</th><th scope="col" className="py-1 font-medium">Mobile</th></tr></thead>
           <tbody className="divide-y divide-slate-100">{data.map((d) => <tr key={d.key}><th scope="row" className="py-1 font-normal text-slate-700">{d.label}</th><td className="py-1">{d.static}</td><td className="py-1">{d.mobile}</td></tr>)}</tbody>
@@ -102,11 +102,11 @@ export function CategoryBars({ data, onBarClick, barHref, bySide = false }: { da
   const click = (_: unknown, index: number) => { const d = data[index]; if (d) onBarClick(d.key) }
   return (
     <>
-    <div style={{ height: Math.max(120, data.length * 34) + (bySide ? 24 : 0) }} role="img" aria-label="Most occurring incident categories (table follows)">
+    <div className="h-[180px]" role="img" aria-label="Most occurring incident categories (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
           <XAxis type="number" hide allowDecimals={false} />
-          <YAxis type="category" dataKey="label" width={110} tick={axis} tickLine={false} axisLine={false} />
+          <YAxis type="category" dataKey="label" width={100} tick={axis} tickLine={false} axisLine={false} />
           <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f1f2f4' }} />
           {bySide ? (
             <>
@@ -141,7 +141,7 @@ export function SideTrendChart({ data, onBarClick, barHref }: {
   const click = (side: IncidentSide) => (_: unknown, index: number) => { const p = rows[index]; if (p) onBarClick(p.bucket, side) }
   return (
     <>
-    <div className="h-56" role="img" aria-label="Static and mobile weighbridge incidents over time (table follows)">
+    <div className="h-[200px]" role="img" aria-label="Static and mobile weighbridge incidents over time (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke={GRID} />
@@ -175,9 +175,9 @@ export function RankedList({ items, onSelect, empty = 'No incidents' }: { items:
     <ul className="divide-y divide-slate-100">
       {items.map((i) => (
         <li key={i.key}>
-          <button type="button" onClick={() => onSelect(i.key)} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm transition duration-200 hover:bg-highway-50">
+          <button type="button" onClick={() => onSelect(i.key)} className="flex w-full items-center justify-between gap-3 py-2 text-left text-[13px] transition duration-200 hover:bg-highway-50">
             <span><span className="font-medium text-slate-800">{i.label}</span>{i.detail && <span className="block text-xs text-slate-500">{i.detail}</span>}</span>
-            <span className="text-lg font-semibold text-slate-900 tabular-nums">{i.count}</span>
+            <span className="text-[15px] font-semibold text-slate-900 tabular-nums">{i.count}</span>
           </button>
         </li>
       ))}
@@ -191,9 +191,9 @@ export function MobileHealthPanel({ data, onSelect }: { data: MobileHealthDto; o
     <ul className="grid grid-cols-2 gap-2">
       {HEALTH_TILES.map((t) => (
         <li key={t.key}>
-          <button type="button" onClick={() => onSelect(t.filter)} className="w-full rounded-xl bg-silver-100 p-3 text-left transition duration-200 hover:bg-highway-50 hover:shadow-[inset_0_0_0_1px_var(--color-highway-400)]">
+          <button type="button" onClick={() => onSelect(t.filter)} className="w-full rounded-md bg-silver-100 p-2.5 text-left transition duration-200 hover:bg-highway-50 hover:shadow-[inset_0_0_0_1px_var(--color-highway-400)]">
             <span className="block text-xs text-slate-500">{t.label}</span>
-            <span className="text-xl font-semibold text-slate-900 tabular-nums">{data[t.key]}</span>
+            <span className="text-lg font-semibold text-slate-900 tabular-nums">{data[t.key]}</span>
             <span className="text-xs text-slate-400"> of {data.total}</span>
           </button>
         </li>
@@ -213,7 +213,7 @@ export function DayNightBars({ data, onBarClick, barHref }: {
   const click = (code: string) => (_: unknown, index: number) => { const p = data.points[index]; if (p) onBarClick(p.weekStart, code) }
   return (
     <>
-    <div className="h-48" role="img" aria-label="Incidents per week by shift (table follows)">
+    <div className="h-[180px]" role="img" aria-label="Incidents per week by shift (table follows)">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke={GRID} />
