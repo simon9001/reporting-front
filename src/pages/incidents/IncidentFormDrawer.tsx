@@ -118,7 +118,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
     </Field>
   )
   const severityField = (
-    <div className="space-y-1.5 sm:col-span-2">
+    <div className="space-y-1.5 md:col-span-2">
       <p className="text-sm font-medium text-slate-700">Severity</p>
       <Segmented<Severity | ''> label="Severity" value={form.severity} onChange={(v) => set('severity', v)} options={[...SEVERITIES].map((s) => ({ value: s, label: SEVERITY_LABELS[s] }))} />
       {errors.severity && <p role="alert" className="text-xs font-medium text-red-600">{errors.severity}</p>}
@@ -147,7 +147,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         </div>
       }
     >
-      <form className="space-y-6" noValidate onSubmit={(e) => { e.preventDefault(); void submit() }}>
+      <form className="space-y-5" noValidate onSubmit={(e) => { e.preventDefault(); void submit() }}>
         {changedUnderneath && (
           <Alert tone="warning">
             Someone else updated this incident while you were editing.{' '}
@@ -166,7 +166,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
 
         {mobile ? (
           <>
-            <section className="grid gap-4 sm:grid-cols-2">
+            <section className="grid gap-4 md:grid-cols-2">
               {whenField}
               <Field label="Vehicle / unit" error={errors.vehicleId}>
                 <Select value={form.vehicleId} onChange={(e) => set('vehicleId', e.target.value)}>
@@ -192,30 +192,30 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
                   {activeOrCurrent(platforms.data, form.platformId).map((p) => <option key={p.id} value={p.id}>{p.value}</option>)}
                 </Select>
               </Field>
-              <div className="sm:col-span-2">
+              <div className="md:col-span-2">
                 <Field label="Event / incident" error={errors.description}>
                   <Textarea rows={3} value={form.description} onChange={(e) => set('description', e.target.value)} />
                 </Field>
               </div>
-              <div className="sm:col-span-2">
+              <div className="md:col-span-2">
                 <Field label="Action taken" error={errors.immediateAction}>
                   <Textarea rows={2} value={form.immediateAction} onChange={(e) => set('immediateAction', e.target.value)} />
                 </Field>
               </div>
-              <div className="sm:col-span-2">
+              <div className="md:col-span-2">
                 <Field label="Remarks" error={errors.remarks}>
                   <Textarea rows={2} value={form.remarks} onChange={(e) => set('remarks', e.target.value)} />
                 </Field>
               </div>
             </section>
-            <section className="grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
-              <h3 className="text-sm font-semibold text-slate-800 sm:col-span-2">Tracking</h3>
+            <section className="grid gap-4 border-t border-line pt-4 md:grid-cols-2">
+              <h3 className="text-sm font-semibold text-slate-800 md:col-span-2">Tracking</h3>
               {categoryField}
               {severityField}
             </section>
           </>
         ) : (
-          <section className="grid gap-4 sm:grid-cols-2">
+          <section className="grid gap-4 md:grid-cols-2">
             {whenField}
             <Field label="Location" error={errors.locationId}>
               <Select value={form.locationId} onChange={(e) => set('locationId', e.target.value)}>
@@ -228,12 +228,12 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
               <Input value={form.locationDetail} onChange={(e) => set('locationDetail', e.target.value)} />
             </Field>
             {severityField}
-            <div className="sm:col-span-2">
+            <div className="md:col-span-2">
               <Field label="Description" error={errors.description}>
                 <Textarea rows={3} value={form.description} onChange={(e) => set('description', e.target.value)} />
               </Field>
             </div>
-            <div className="sm:col-span-2">
+            <div className="md:col-span-2">
               <Field label="Immediate action" error={errors.immediateAction}>
                 <Textarea rows={2} value={form.immediateAction} onChange={(e) => set('immediateAction', e.target.value)} />
               </Field>
@@ -241,7 +241,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
           </section>
         )}
 
-        <section className="grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
+        <section className="grid gap-4 border-t border-line pt-4 md:grid-cols-3">
           <Field label="Notified / escalated to" error={errors.escalatedTo}>
             <Input value={form.escalatedTo} onChange={(e) => set('escalatedTo', e.target.value)} />
           </Field>
@@ -253,7 +253,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
           </Field>
         </section>
 
-        <section className="grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
+        <section className="grid gap-4 border-t border-line pt-4 md:grid-cols-3">
           <Field label="Status" error={errors.status}>
             <Select value={form.status} onChange={(e) => set('status', e.target.value as IncidentStatus)}>
               {INCIDENT_STATUSES.map((s) => <option key={s} value={s}>{INCIDENT_STATUS_LABELS[s]}</option>)}
@@ -264,15 +264,15 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
               <Input type="datetime-local" value={form.resolvedAt} onChange={(e) => set('resolvedAt', e.target.value)} />
             </Field>
           )}
-          <div className={isResolved(form.status) ? '' : 'sm:col-span-2'}>
+          <div className={isResolved(form.status) ? '' : 'md:col-span-2'}>
             <Field label="Resolution" error={errors.resolution} hint="How it was resolved, or what the next shift needs to know">
               <Input value={form.resolution} onChange={(e) => set('resolution', e.target.value)} />
             </Field>
           </div>
         </section>
 
-        <section className="space-y-2 border-t border-line pt-5">
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600 hover:border-asphalt-800 hover:bg-highway-50">
+        <section className="space-y-2 border-t border-line pt-4">
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 px-4 py-4 text-[13px] text-slate-600 hover:border-asphalt-800 hover:bg-highway-50">
             <ImagePlus className="size-5 text-slate-400" aria-hidden />
             <span>Add snapshots <span className="text-slate-400">(photos, screenshots or PDF · up to 10 MB each)</span></span>
             <input type="file" multiple accept={ACCEPT} className="sr-only" aria-label="Add snapshots" onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />

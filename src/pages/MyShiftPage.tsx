@@ -9,7 +9,7 @@ import { OnDutyCard } from '../components/OnDutyCard'
 import { Alert, Button, Card, PageHeader } from '../components/ui'
 import { formatDate, greeting } from '../lib/format'
 import { useNow } from '../lib/useNow'
-import { incidentColumns } from './incidents/columns'
+import { incidentColumns, incidentMobileRow } from './incidents/columns'
 import { canLogIncidents } from './incidents/incidentForm'
 import { IncidentDrawer } from './incidents/IncidentDrawer'
 import { IncidentFormDrawer } from './incidents/IncidentFormDrawer'
@@ -26,7 +26,7 @@ function SideCounts({ shiftId }: { shiftId: number }) {
 function ShiftIncidents({ title, shiftId, emptyHint, onOpen }: { title: ReactNode; shiftId: number; emptyHint?: string; onOpen: (ref: string) => void }) {
   const incidents = useIncidents({ shiftId, sort: '-occurredAt', pageSize: 25 })
   return (
-    <Card title={<>{title}<SideCounts shiftId={shiftId} /></>} actions={<Link to={`/incidents?shiftId=${shiftId}`} className="text-sm font-medium text-link hover:underline">Open in explorer</Link>}>
+    <Card title={<>{title}<SideCounts shiftId={shiftId} /></>} actions={<Link to={`/incidents?shiftId=${shiftId}`} className="text-[13px] font-medium text-link hover:underline">Open in explorer</Link>}>
       <DataTable
         columns={incidentColumns({ showShift: false })}
         rows={incidents.data?.items ?? []}
@@ -34,6 +34,7 @@ function ShiftIncidents({ title, shiftId, emptyHint, onOpen }: { title: ReactNod
         loading={incidents.isPending}
         onRowClick={(i) => onOpen(i.ref)}
         rowLabel={(i) => `Open ${i.ref}`}
+        mobile={incidentMobileRow}
         empty={<EmptyState title="No incidents logged on this shift yet" description={emptyHint} />}
       />
     </Card>
@@ -62,7 +63,7 @@ export function MyShiftPage() {
       />
       {role === null && !previousShift && <Alert tone="info">You are not on the current shift. You can view records but cannot log entries for it.</Alert>}
       {role === null && previousShift && <Alert tone="info">You are not on the current shift, but you can still log late entries for the {previousName}.</Alert>}
-      <OnDutyCard currentShift={currentShift} now={now} canPlan={false} myRole={role} />
+      <OnDutyCard variant="banner" currentShift={currentShift} now={now} canPlan={false} myRole={role} />
       {shiftId && <ShiftIncidents title="This shift's incidents" shiftId={shiftId} emptyHint={role ? 'Use “Log incident” as soon as something happens.' : undefined} onOpen={setOpenRef} />}
       {previousShift && (
         <ShiftIncidents

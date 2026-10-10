@@ -2,16 +2,16 @@ import { incidentPlace, type IncidentDto } from '@sr/shared'
 import type { ReactNode } from 'react'
 import { useDeleteSnapshot } from '../../api/incidents'
 import { EscalationBadge, LinkChip, SeverityBadge, SideBadge, StatusBadge, VehicleStatusChip } from '../../components/badges'
-import { Alert } from '../../components/ui'
+import { Alert, cx } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
 import { formatDate, formatDateTime, formatDuration } from '../../lib/format'
 import { SnapshotGallery } from './SnapshotGallery'
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+function Fact({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
-    <div className="grid grid-cols-[8.5rem_1fr] gap-2 py-1.5 text-sm">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-slate-800">{children}</dd>
+    <div className={cx('min-w-0', wide && 'md:col-span-2')}>
+      <dt className="text-xs text-slate-500">{label}</dt>
+      <dd className="mt-0.5 break-words text-[13px] text-slate-800">{children}</dd>
     </div>
   )
 }
@@ -19,12 +19,12 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 export function IncidentDetail({ incident: i }: { incident: IncidentDto; onEdit?: () => void }) {
   const remove = useDeleteSnapshot()
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2"><SideBadge side={i.side} /><SeverityBadge severity={i.severity} /><StatusBadge status={i.status} /><EscalationBadge result={i.escalationResult} minutes={i.escalationMinutes} /></div>
-        <p className="text-base font-medium text-slate-900">{i.description}</p>
+        <p className="text-[15px] font-medium text-slate-900">{i.description}</p>
       </div>
-      <dl className="divide-y divide-slate-100">
+      <dl className="grid gap-x-6 gap-y-3 md:grid-cols-2">
         <Fact label="Occurred">{formatDateTime(i.occurredAt)}</Fact>
         {i.side === 'MOBILE' ? (
           <>
@@ -43,25 +43,25 @@ export function IncidentDetail({ incident: i }: { incident: IncidentDto; onEdit?
           <Fact label="Location">{incidentPlace(i)}{i.locationDetail && ` · ${i.locationDetail}`}</Fact>
         )}
         <Fact label="Category">{i.category.value}</Fact>
-        <Fact label="Shift">{i.shiftName} shift of {formatDate(i.shiftDate)}{i.afterMidnight && <span className="text-slate-500"> (after midnight)</span>}<span className="block text-xs text-slate-500">Supervisor {i.supervisorName} · Officer {i.officerName}</span></Fact>
+        <Fact label="Shift" wide>{i.shiftName} shift of {formatDate(i.shiftDate)}{i.afterMidnight && <span className="text-slate-500"> (after midnight)</span>}<span className="block text-xs text-slate-500">Supervisor {i.supervisorName} · Officer {i.officerName}</span></Fact>
         <Fact label={i.side === 'MOBILE' ? 'Logged by' : 'Reported by'}>{i.reportedBy.fullName}</Fact>
-        {i.immediateAction && <Fact label={i.side === 'MOBILE' ? 'Action taken' : 'Immediate action'}>{i.immediateAction}</Fact>}
-        {i.remarks && <Fact label="Remarks">{i.remarks}</Fact>}
+        {i.immediateAction && <Fact label={i.side === 'MOBILE' ? 'Action taken' : 'Immediate action'} wide>{i.immediateAction}</Fact>}
+        {i.remarks && <Fact label="Remarks" wide>{i.remarks}</Fact>}
         <Fact label="Escalation">{i.escalatedTo ? <>{i.escalatedTo}{i.escalatedAt && ` at ${formatDateTime(i.escalatedAt)}`}</> : <span className="text-slate-400">Nobody notified</span>}</Fact>
         {i.assignedTo && <Fact label="Assigned to">{i.assignedTo}</Fact>}
         {i.resolvedAt && <Fact label="Resolved">{formatDateTime(i.resolvedAt)}{i.minutesToResolve !== null && <span className="text-slate-500"> · took {formatDuration(i.minutesToResolve * 60_000)}</span>}</Fact>}
-        {i.resolution && <Fact label="Resolution / notes">{i.resolution}</Fact>}
+        {i.resolution && <Fact label="Resolution / notes" wide>{i.resolution}</Fact>}
       </dl>
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-slate-800">Snapshots ({i.attachments.length})</h3>
+        <h3 className="text-[13px] font-semibold text-slate-800">Snapshots ({i.attachments.length})</h3>
         {remove.isError && <Alert>{errorMessage(remove.error)}</Alert>}
         <SnapshotGallery attachments={i.attachments} onDelete={(a) => remove.mutate(a.id)} />
       </section>
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-slate-800">Timeline</h3>
-        <ol className="space-y-3 border-l-2 border-silver-200 pl-4">
+        <h3 className="text-[13px] font-semibold text-slate-800">Timeline</h3>
+        <ol className="space-y-2 border-l-2 border-silver-200 pl-4">
           {i.events.map((e) => (
-            <li key={e.id} className="relative text-sm">
+            <li key={e.id} className="relative text-[13px]">
               <span className="absolute -left-[1.4rem] top-1.5 size-2.5 rounded-full bg-highway-400 ring-4 ring-white shadow-[0_0_0_1px_var(--color-asphalt-800)]" aria-hidden />
               <p className="text-slate-800">{e.summary}</p>
               <p className="text-xs text-slate-500">{formatDateTime(e.at)}{e.user && ` · ${e.user.fullName}`}</p>
