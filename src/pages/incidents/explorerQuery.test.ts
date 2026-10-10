@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { explorerQuery, hasActiveFilters, lastPage, parsePage, sidePatch } from './explorerQuery'
+import { activeFilterCount, explorerQuery, hasActiveFilters, lastPage, parsePage, sidePatch } from './explorerQuery'
 
 describe('explorer query', () => {
   it('maps URL values to the API query with defaults', () => {
@@ -28,5 +28,12 @@ describe('explorer query', () => {
     expect(sidePatch('STATIC')).toEqual({ side: 'STATIC', vehicleId: undefined, platformId: undefined, vehicleStatus: undefined, gpsStatus: undefined, dashcamStatus: undefined })
     expect(sidePatch(undefined)).toMatchObject({ side: undefined, vehicleId: undefined })
     expect(sidePatch('MOBILE')).toEqual({ side: 'MOBILE' })
+  })
+
+  it('counts active filters for the Filters button (search excluded, a date range counts once)', () => {
+    expect(activeFilterCount({})).toBe(0)
+    expect(activeFilterCount({ q: 'wb04', sort: 'ref', page: '2', open: 'INC-1' })).toBe(0)
+    expect(activeFilterCount({ from: '2026-09-01', to: '2026-09-30' })).toBe(1)
+    expect(activeFilterCount({ from: '2026-09-01', to: '2026-09-30', severity: 'HIGH', side: 'MOBILE', vehicleId: '3' })).toBe(4)
   })
 })

@@ -41,3 +41,9 @@ export const hasActiveFilters = (v: FilterValues) => FILTER_KEYS.some((k) => !!v
 export function sidePatch(side: string | undefined): Record<string, string | undefined> {
   return side === 'MOBILE' ? { side } : { side, ...Object.fromEntries(MOBILE_KEYS.map((k) => [k, undefined])) }
 }
+
+/** Number shown on the "Filters (n)" button: every filter except the always-visible search; from/to count as one date filter. */
+export function activeFilterCount(v: FilterValues): number {
+  const single = FILTER_KEYS.filter((k) => k !== 'q' && k !== 'from' && k !== 'to' && !!v[k]).length
+  return single + (v.from || v.to ? 1 : 0)
+}

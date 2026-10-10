@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { incidentPlace, type IncidentListItemDto, type IncidentSide } from '@sr/shared'
 import { Paperclip } from 'lucide-react'
 import { SeverityBadge, SideBadge, StatusBadge } from '../../components/badges'
@@ -31,4 +32,18 @@ export function incidentColumns({ showShift = true, side }: { showShift?: boolea
     render: (i) => (i.attachmentCount > 0 ? <span className="inline-flex items-center gap-1 text-slate-600"><Paperclip className="size-3.5" aria-hidden />{i.attachmentCount}</span> : <span className="text-slate-300">—</span>),
   })
   return cols
+}
+
+/** Stacked row for phones: ref + side, time, place or unit, severity + status. */
+export function incidentMobileRow(i: IncidentListItemDto): ReactNode {
+  return (
+    <span className="block space-y-1">
+      <span className="flex items-center justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-1.5"><span className="font-semibold text-asphalt-900">{i.ref}</span><SideBadge side={i.side} /></span>
+        <span className="shrink-0 whitespace-nowrap text-xs text-slate-500">{formatDateTime(i.occurredAt)}</span>
+      </span>
+      <span className="block truncate text-slate-600">{i.side === 'MOBILE' ? `${i.vehicle?.unitId ?? '—'} · ${incidentPlace(i)}` : incidentPlace(i)}</span>
+      <span className="flex flex-wrap gap-1"><SeverityBadge severity={i.severity} /><StatusBadge status={i.status} /></span>
+    </span>
+  )
 }

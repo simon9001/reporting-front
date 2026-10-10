@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest'
 
 /** Folders (relative to src/) whose source must follow the compact density scale. Later tasks extend this list. */
 const SCOPE: string[] = ['components', 'layout', 'pages/dashboard']
+/** Individual files added ahead of their whole folder. */
+const EXTRA_FILES: string[] = ['pages/incidents/IncidentExplorerPage.tsx', 'pages/incidents/columns.tsx']
 /** The only files allowed to use a drop shadow: overlays and the sign-in cards. */
 const SHADOW_OK: string[] = ['components/Drawer.tsx', 'components/Popover.tsx', 'layout/CommandPalette.tsx', 'layout/UserMenu.tsx', 'layout/NavOverlay.tsx']
 
@@ -37,7 +39,7 @@ function files(dir: string): string[] {
 const rel = (f: string) => relative(root, f).split(sep).join('/')
 
 describe('compact density scale', () => {
-  const scoped = SCOPE.flatMap((d) => files(join(root, d)))
+  const scoped = [...SCOPE.flatMap((d) => files(join(root, d))), ...EXTRA_FILES.map((f) => join(root, f))]
   it('scans at least one file', () => expect(scoped.length).toBeGreaterThan(0))
   for (const file of scoped) {
     it(`${rel(file)} uses only compact utilities`, () => {
