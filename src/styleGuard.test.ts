@@ -16,14 +16,16 @@ const SHADOW_OK: string[] = [
 
 /** Each rule: pattern, reason, and the only files (relative to src/) allowed to use it. */
 const BANNED: { re: RegExp; why: string; allow?: string[] }[] = [
-  { re: /\brounded-(2xl|xl)\b/, why: 'panels are rounded-lg, controls rounded-md' },
+  { re: /\brounded(-[trblse]{1,2})?-(xl|2xl|3xl)\b/, why: 'panels are rounded-lg, controls rounded-md' },
   { re: /rounded-\[10px\]/, why: 'controls are rounded-md' },
   { re: /(^|[\s'"`:])h-10\b/, why: 'controls are h-9 sm:h-8' },
   { re: /\btext-2xl\b/, why: 'text-2xl is only the KPI value', allow: ['components/StatCard.tsx'] },
   { re: /\btext-(3xl|4xl|5xl|6xl|7xl)\b/, why: 'largest type is text-xl for titles' },
+  { re: /\btext-\[(2[1-9]|[3-9]\d)px\]/, why: 'arbitrary text above 20px is not allowed', allow: ['pages/NotFoundPage.tsx'] },
   { re: /\bshadow-(sm|md|lg|xl|2xl)\b/, why: 'no drop shadows except shadow-card on overlays' },
-  { re: /\bgap-(5|6|8)\b/, why: 'grid gaps are gap-3' },
-  { re: /\bspace-y-(6|8)\b/, why: 'vertical rhythm is space-y-4 at most' },
+  { re: /\bshadow\b(?![-\w])/, why: 'no bare drop shadow (use shadow-card on overlays only)' },
+  { re: /\bgap(-[xy])?-(5|6|8)\b/, why: 'grid gaps are gap-3' },
+  { re: /\bspace-y-(5|6|8)\b/, why: 'vertical rhythm is space-y-4 at most' },
   { re: /(^|[\s'"`:])p-(5|8)\b/, why: 'panel padding is p-4 (the sign-in cards use p-6)' },
   { re: /\bpx-8\b/, why: 'page padding is px-4 / md:px-6' },
   { re: /\bpy-12\b/, why: 'empty states are py-4 (compact) or py-10 (page)' },
@@ -37,7 +39,7 @@ function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const full = join(dir, name)
     if (statSync(full).isDirectory()) return files(full)
-    return /\.(tsx|ts)$/.test(name) && !/\.test\.ts$/.test(name) ? [full] : []
+    return /\.(tsx|ts)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [full] : []
   })
 }
 const rel = (f: string) => relative(root, f).split(sep).join('/')

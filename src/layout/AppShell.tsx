@@ -21,6 +21,13 @@ export function AppShell() {
   const belowLg = useBelow('lg')
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  // Close the menu when the viewport reaches lg or the route changes (adjusting state during render, not in an effect).
+  const [menuPath, setMenuPath] = useState(pathname)
+  if (menuPath !== pathname) {
+    setMenuPath(pathname)
+    if (menuOpen) setMenuOpen(false)
+  }
+  if (!belowLg && menuOpen) setMenuOpen(false)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

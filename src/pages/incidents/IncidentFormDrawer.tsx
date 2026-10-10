@@ -147,7 +147,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         </div>
       }
     >
-      <form className="space-y-5" noValidate onSubmit={(e) => { e.preventDefault(); void submit() }}>
+      <form className="space-y-4" noValidate onSubmit={(e) => { e.preventDefault(); void submit() }}>
         {changedUnderneath && (
           <Alert tone="warning">
             Someone else updated this incident while you were editing.{' '}

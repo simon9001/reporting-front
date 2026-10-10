@@ -41,6 +41,8 @@ export function IncidentExplorerPage() {
   const keepPage = { page: values.page }
   const filtersInDrawer = useBelow('lg')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  // widening past lg shows the inline filters, so a drawer left open must not reappear when narrowing again
+  if (!filtersInDrawer && filtersOpen) setFiltersOpen(false)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [truncated, setTruncated] = useState(false)

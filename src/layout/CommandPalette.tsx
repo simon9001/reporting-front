@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { FileWarning, Search, User } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { pushLayer } from '../components/layers'
 import { cx, Kbd } from '../components/ui'
 import { api } from '../lib/api'
 import { formatDateTime } from '../lib/format'
@@ -23,7 +24,12 @@ export function CommandPalette({ onClose, role }: { onClose: () => void; role: R
   useEffect(() => {
     // focus the input here too: StrictMode's simulated unmount would otherwise leave focus on `previous`
     dialog.current?.querySelector<HTMLElement>('input')?.focus()
-    return () => { if (previous?.isConnected) previous.focus() }
+    // joins the layer stack so overlays beneath (drawers, the menu) ignore Escape/Tab while the palette is open
+    const layer = pushLayer()
+    return () => {
+      layer.pop()
+      if (previous?.isConnected) previous.focus()
+    }
   }, [previous])
   const term = q.trim()
   const leader = role === 'DEPUTY_DIRECTOR' || role === 'ADMIN'

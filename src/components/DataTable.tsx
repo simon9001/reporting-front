@@ -20,6 +20,7 @@ function nextSort(current: string | undefined, key: string): string {
 /**
  * Below md, when `mobile` is given, rows render as a stacked list (buttons named by `rowLabel` when clickable).
  * Without `mobile`, the table scrolls horizontally inside its card.
+ * `mobile` content must not contain interactive elements when `onRowClick` is set (it is wrapped in a button).
  */
 export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRowClick, loading, empty, rowLabel, mobile }: {
   columns: Column<T>[]
@@ -56,7 +57,7 @@ export function DataTable<T,>({ columns, rows, rowKey, sort, onSortChange, onRow
   return (
     <div className="-mx-4 overflow-x-auto">
       <table className="min-w-full text-[13px]">
-        <thead className="sticky top-0 z-10 bg-silver-100 text-left text-xs text-slate-500">
+        <thead className="bg-silver-100 text-left text-xs text-slate-500">
           <tr>
             {columns.map((c) => {
               const active = !!c.sortKey && (sort === c.sortKey || sort === `-${c.sortKey}`)

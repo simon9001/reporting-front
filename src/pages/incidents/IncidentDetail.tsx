@@ -19,12 +19,12 @@ function Fact({ label, children, wide }: { label: string; children: ReactNode; w
 export function IncidentDetail({ incident: i }: { incident: IncidentDto; onEdit?: () => void }) {
   const remove = useDeleteSnapshot()
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2"><SideBadge side={i.side} /><SeverityBadge severity={i.severity} /><StatusBadge status={i.status} /><EscalationBadge result={i.escalationResult} minutes={i.escalationMinutes} /></div>
         <p className="text-[15px] font-medium text-slate-900">{i.description}</p>
       </div>
-      <dl className="grid gap-x-6 gap-y-3 md:grid-cols-2">
+      <dl className="grid gap-x-4 gap-y-3 md:grid-cols-2">
         <Fact label="Occurred">{formatDateTime(i.occurredAt)}</Fact>
         {i.side === 'MOBILE' ? (
           <>

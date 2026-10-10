@@ -12,7 +12,7 @@ async function signIn(page: Page, email: string, password: string) {
 
 async function noHorizontalScroll(page: Page, name: string, w: number, h: number) {
   await page.waitForLoadState('load')
-  // Wait for real content: no Skeleton ("Loading") or Spinner ("Loading…") placeholders left, then two frames to settle layout.
+  // Wait for real content: no Skeleton ("Loading") or Spinner ("Loadingâ€¦") placeholders left, then two frames to settle layout.
   // Queries mount after `load`, so a single zero count can be a gap before they start: require it to stay zero for 1s.
   const loading = page.locator('[role="status"][aria-label^="Loading"]')
   await expect(async () => {
@@ -141,5 +141,26 @@ test('widening past lg removes the rail overlay instead of doubling the sidebar'
   await page.setViewportSize({ width: 1366, height: 768 })
   await expect(page.getByRole('dialog', { name: 'Menu' })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Roster' })).toHaveCount(1)
+  // narrowing again must not bring the stale overlay back
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await expect(page.getByRole('dialog', { name: 'Menu' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Expand menu' })).toHaveAttribute('aria-expanded', 'false')
+  await ctx.close()
+})
+
+test('Escape in the command palette closes only the palette, not the dialog beneath it', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } })
+  const page = await ctx.newPage()
+  await signIn(page, 'e2e-sup@test.local', 'SupervisorPass2026')
+  await page.getByRole('button', { name: 'Log incident' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Log incident' })
+  const description = dialog.locator('label', { hasText: /^Description/ }).locator('textarea')
+  await description.fill('Keep this text')
+  await page.keyboard.press('Control+K')
+  await expect(page.getByRole('combobox', { name: 'Search' })).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('combobox', { name: 'Search' })).toHaveCount(0)
+  await expect(dialog).toBeVisible()
+  await expect(description).toHaveValue('Keep this text')
   await ctx.close()
 })

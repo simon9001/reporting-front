@@ -16,7 +16,7 @@ export function useModalLayer(open: boolean, panel: RefObject<HTMLElement | null
     const layer = pushLayer()
     panel.current?.focus()
     const onKey = (e: KeyboardEvent) => {
-      if (!layer.isTop()) return
+      if (e.defaultPrevented || !layer.isTop()) return
       if (e.key === 'Escape') {
         closeRef.current()
         return
@@ -47,7 +47,9 @@ export function useModalLayer(open: boolean, panel: RefObject<HTMLElement | null
     return () => {
       document.removeEventListener('keydown', onKey)
       layer.pop()
-      previous?.focus()
+      // the opener may be gone or hidden (e.g. the rail's expand button after a resize): fall back to the main landmark
+      if (previous?.isConnected && previous.offsetParent !== null) previous.focus()
+      else document.getElementById('main')?.focus()
     }
   }, [open, panel])
 }
