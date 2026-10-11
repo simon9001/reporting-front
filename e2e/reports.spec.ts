@@ -25,7 +25,9 @@ test('the supervisor submits the shift report; the Deputy Director sees it arriv
   const sup = await supContext.newPage()
   await signIn(sup, 'e2e-sup@test.local', 'SupervisorPass2026')
   await expect(sup).toHaveURL(/\/my-shift$/)
-  await sup.getByRole('link', { name: 'Open report' }).first().click()
+  // Submit opens 30 minutes before a shift ends, so the supervisor submits the previous (ended) shift's report: it is late.
+  const previousCard = sup.locator('section').filter({ has: sup.getByRole('heading', { name: "Previous shift's report" }) })
+  await previousCard.getByRole('link', { name: 'Open report' }).click()
   await expect(sup).toHaveURL(/\/reports\/\d+$/)
 
   await sup.getByRole('radiogroup', { name: 'Overall status' }).getByRole('radio', { name: 'Normal' }).click()
@@ -45,7 +47,8 @@ test('the supervisor submits the shift report; the Deputy Director sees it arriv
   await expect(sup.getByText('Quiet shift, all systems normal (e2e)')).toBeVisible()
 
   // Live: no reload on the Deputy Director's archive.
-  const row = dd.getByRole('row', { name: /^Open .* shift report / }).first()
+  // Newest shift first: the current shift's draft, then the previous shift's report.
+  const row = dd.getByRole('row', { name: /^Open .* shift report / }).last()
   await expect(row).toContainText('Submitted', { timeout: 15_000 })
   await row.click()
   await expect(dd).toHaveURL(/\/reports\/\d+$/)
