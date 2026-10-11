@@ -6,6 +6,7 @@ import { useMe } from '../auth/hooks'
 import { DataTable } from '../components/DataTable'
 import { EmptyState } from '../components/EmptyState'
 import { OnDutyCard } from '../components/OnDutyCard'
+import { ShiftReportPanel } from './reports/ShiftReportPanel'
 import { Alert, Button, Card, PageHeader } from '../components/ui'
 import { formatDate, greeting } from '../lib/format'
 import { useNow } from '../lib/useNow'
@@ -64,6 +65,8 @@ export function MyShiftPage() {
       {role === null && !previousShift && <Alert tone="info">You are not on the current shift. You can view records but cannot log entries for it.</Alert>}
       {role === null && previousShift && <Alert tone="info">You are not on the current shift, but you can still log late entries for the {previousName}.</Alert>}
       <OnDutyCard variant="banner" currentShift={currentShift} now={now} canPlan={false} myRole={role} />
+      {shiftId && role && <ShiftReportPanel shiftId={shiftId} title="This shift's report" />}
+      {previousShift && <ShiftReportPanel shiftId={previousShift.id} title="Previous shift's report" />}
       {shiftId && <ShiftIncidents title="This shift's incidents" shiftId={shiftId} emptyHint={role ? 'Use “Log incident” as soon as something happens.' : undefined} onOpen={setOpenRef} />}
       {previousShift && (
         <ShiftIncidents

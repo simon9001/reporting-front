@@ -11,6 +11,7 @@ import { VehiclesPage } from './pages/admin/VehiclesPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { IncidentExplorerPage } from './pages/incidents/IncidentExplorerPage'
 import { IncidentPage } from './pages/incidents/IncidentPage'
+import { ReportPage } from './pages/reports/ReportPage'
 import { MyShiftPage } from './pages/MyShiftPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { OfficersPage } from './pages/OfficersPage'
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
           { path: 'roster', element: <RosterPage /> },
           { path: 'incidents', element: <IncidentExplorerPage /> },
           { path: 'incidents/:ref', element: <IncidentPage /> },
+          { path: 'reports/:id', element: <ReportPage /> },
           { element: <RequireRole roles={['OFFICER']} />, children: [{ path: 'my-shift', element: <MyShiftPage /> }] },
           { element: <RequireRole roles={['DEPUTY_DIRECTOR', 'ADMIN']} />, children: [{ path: 'dashboard', element: <DashboardPage /> }, { path: 'officers', element: <OfficersPage /> }] },
           {
