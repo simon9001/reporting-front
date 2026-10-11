@@ -1,11 +1,12 @@
-export type SaveState = 'idle' | 'saving' | 'saved' | 'conflict' | 'error'
+/** `pending`: there are edits that are not saved yet. */
+export type SaveState = 'idle' | 'pending' | 'saving' | 'saved' | 'conflict' | 'error'
 
 export interface Autosave<F> {
-  /** Records the latest fields, marks them dirty and (re)starts the debounce timer. */
+  /** Records the latest fields, marks them dirty (state `pending`) and (re)starts the debounce timer. */
   change(next: F): void
   /** Waits for any in-flight save, then saves pending changes. Resolves true only when nothing is unsaved. */
   flush(): Promise<boolean>
-  /** Clears the timer. */
+  /** Clears the timer only; call `flush()` afterwards to still save pending edits (e.g. on unmount). */
   dispose(): void
 }
 
@@ -60,6 +61,7 @@ export function createAutosave<F>(opts: {
       latest = next
       dirty = true
       failed = false
+      opts.onState('pending')
       arm()
     },
     async flush() {

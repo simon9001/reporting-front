@@ -7,9 +7,13 @@ import { Segmented } from '../../components/Segmented'
 import { Alert, Button, Card, Field, Textarea } from '../../components/ui'
 import { ApiError, errorMessage } from '../../lib/api'
 import { createAutosave, type SaveState } from '../../lib/autosave'
-import { formatDate } from '../../lib/format'
+import { formatDate, formatTime } from '../../lib/format'
+import { useNow } from '../../lib/useNow'
 
-/** Editable while DRAFT for the shift's supervisor; autosaves 1s after typing stops; Submit flushes (and awaits) any save first. */
+/**
+ * Editable while DRAFT for the shift's supervisor; autosaves 1s after typing stops; Submit flushes (and awaits) any save first.
+ * Leaving the page still saves pending edits (the save outlives the form), and the browser warns before closing with unsaved edits.
+ */
 export function ReportSupervisorForm({ report, onReload }: { report: ShiftReportDto; onReload: () => void }) {
   const [fields, setFields] = useState<ReportFieldsDto>(report.fields)
   const [state, setState] = useState<SaveState>('idle')
@@ -23,6 +27,9 @@ export function ReportSupervisorForm({ report, onReload }: { report: ShiftReport
   const shiftId = report.shiftId
   const reportId = report.id
   const { mutateAsync } = save
+  const now = useNow()
+  // Submit opens 30 min before the shift ends; `now` keeps the button live without a reload (the server enforces it too).
+  const submitOpen = report.canSubmit || now >= new Date(report.submitOpensAt)
 
   const [autosave] = useState(() =>
     createAutosave<ReportFieldsDto>({
@@ -31,13 +38,25 @@ export function ReportSupervisorForm({ report, onReload }: { report: ShiftReport
       isConflict: (e) => e instanceof ApiError && e.status === 409,
       save: async (f, baseline) => {
         const saved = await mutateAsync({ shiftId, body: { ...f, updatedAt: baseline } })
-        // Keep the cache fresh so remounting the page never starts from stale text or a stale updatedAt.
+        // Keep the cache fresh so remounting the page never starts from stale text or a stale updatedAt;
+        // cancel any in-flight fetch first so an older response cannot overwrite it.
+        await qc.cancelQueries({ queryKey: ['report', reportId] })
         qc.setQueryData(['report', reportId], saved)
         return saved
       },
     }),
   )
-  useEffect(() => () => autosave.dispose(), [autosave])
+  useEffect(() => () => {
+    autosave.dispose()
+    void autosave.flush() // the mutation outlives the component, so edits made just before leaving are kept
+  }, [autosave])
+  const unsaved = state === 'pending' || state === 'saving'
+  useEffect(() => {
+    if (!unsaved) return
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [unsaved])
 
   const change = (patch: Partial<ReportFieldsDto>) => {
     const next = { ...fieldsRef.current, ...patch }
@@ -74,7 +93,7 @@ export function ReportSupervisorForm({ report, onReload }: { report: ShiftReport
   return (
     <Card
       title="Supervisor's report"
-      actions={<span role="status" className="text-xs text-slate-500">{state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? 'Not saved — will retry when you edit' : ''}</span>}
+      actions={<span role="status" className="text-xs text-slate-500">{state === 'pending' ? 'Unsaved changes' : state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? 'Not saved — will retry when you edit' : ''}</span>}
     >
       <div className="space-y-4">
         {state === 'conflict' && (
@@ -114,8 +133,9 @@ export function ReportSupervisorForm({ report, onReload }: { report: ShiftReport
           ))}
         </fieldset>
         {submitError && <Alert>{submitError}</Alert>}
-        <div className="flex justify-end">
-          <Button onClick={() => void askSubmit()} disabled={submit.isPending || state === 'conflict'}>Submit report</Button>
+        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          {!submitOpen && <p className="text-xs text-slate-500">You can submit from {formatTime(report.submitOpensAt)} (30 minutes before the shift ends).</p>}
+          <Button onClick={() => void askSubmit()} disabled={!submitOpen || submit.isPending || state === 'conflict'}>Submit report</Button>
         </div>
       </div>
       <Drawer

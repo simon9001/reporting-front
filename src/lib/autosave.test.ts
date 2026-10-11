@@ -70,6 +70,27 @@ describe('createAutosave', () => {
     expect(await a.flush()).toBe(false)
   })
 
+  it('reports pending as soon as there are unsaved edits', async () => {
+    const save = vi.fn().mockResolvedValue({ updatedAt: 'v2' })
+    const states: string[] = []
+    const a = createAutosave<string>({ save, baseline: 'v1', onState: (s) => states.push(s), isConflict })
+    a.change('a')
+    expect(states).toEqual(['pending'])
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(states).toEqual(['pending', 'saving', 'saved'])
+  })
+
+  it('a flush after dispose still saves the pending edit', async () => {
+    const save = vi.fn().mockResolvedValue({ updatedAt: 'v2' })
+    const a = createAutosave<string>({ save, baseline: 'v1', onState: () => {}, isConflict })
+    a.change('typed just before leaving')
+    a.dispose()
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(save).not.toHaveBeenCalled() // dispose only clears the timer
+    expect(await a.flush()).toBe(true)
+    expect(save).toHaveBeenCalledWith('typed just before leaving', 'v1')
+  })
+
   it('never runs two saves at once', async () => {
     let active = 0, peak = 0
     const save = vi.fn(async () => {
