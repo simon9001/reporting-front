@@ -3,6 +3,8 @@ import type { ShiftReportDto } from '@sr/shared'
 type StatusInput = Pick<ShiftReportDto, 'status' | 'overdue' | 'submittedAt' | 'submittedBy' | 'timeliness' | 'lateMinutes'> & { content: { deadline: string } }
 export type StatusTone = 'neutral' | 'danger' | 'success' | 'warning'
 
+export const toneBadge = { neutral: 'slate', danger: 'red', success: 'green', warning: 'amber' } as const
+
 const minutesText = (m: number) => (m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`)
 
 export function reportStatusLine(r: StatusInput, now: Date, fmtTime: (iso: string) => string): { text: string; tone: StatusTone } {

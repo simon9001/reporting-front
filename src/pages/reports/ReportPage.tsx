@@ -11,9 +11,8 @@ import { useNow } from '../../lib/useNow'
 import { IncidentDrawer } from '../incidents/IncidentDrawer'
 import { ReportContentView } from './ReportContentView'
 import { ReportSupervisorForm } from './ReportSupervisorForm'
-import { reportStatusLine } from './reportView'
+import { reportStatusLine, toneBadge } from './reportView'
 
-const toneBadge = { neutral: 'slate', danger: 'red', success: 'green', warning: 'amber' } as const
 
 function SubmittedFields({ r }: { r: ShiftReportDto }) {
   return (

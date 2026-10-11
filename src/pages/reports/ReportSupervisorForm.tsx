@@ -1,15 +1,15 @@
 import { OVERALL_STATUS_LABELS, OVERALL_STATUSES, REPORT_CONFIRMATIONS, REPORT_TEXT_FIELDS, REPORT_TEXT_LABELS, REPORT_TEXT_MAX, reportSubmitProblems, type OverallStatus, type ReportFieldsDto, type ShiftReportDto } from '@sr/shared'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
 import { useSaveReport, useSubmitReport } from '../../api/reports'
 import { Drawer } from '../../components/Drawer'
 import { Segmented } from '../../components/Segmented'
 import { Alert, Button, Card, Field, Textarea } from '../../components/ui'
 import { ApiError, errorMessage } from '../../lib/api'
+import { createAutosave, type SaveState } from '../../lib/autosave'
 import { formatDate } from '../../lib/format'
 
-type SaveState = 'idle' | 'saving' | 'saved' | 'conflict' | 'error'
-
-/** Editable while DRAFT for the shift's supervisor; autosaves 1s after typing stops; Submit flushes the pending save first. */
+/** Editable while DRAFT for the shift's supervisor; autosaves 1s after typing stops; Submit flushes (and awaits) any save first. */
 export function ReportSupervisorForm({ report, onReload }: { report: ShiftReportDto; onReload: () => void }) {
   const [fields, setFields] = useState<ReportFieldsDto>(report.fields)
   const [state, setState] = useState<SaveState>('idle')
@@ -17,51 +17,50 @@ export function ReportSupervisorForm({ report, onReload }: { report: ShiftReport
   const [problems, setProblems] = useState<Record<string, string>>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
   const fieldsRef = useRef(fields)
-  const baseline = useRef(report.updatedAt)
-  const dirty = useRef(false)
   const save = useSaveReport()
   const submit = useSubmitReport()
+  const qc = useQueryClient()
   const shiftId = report.shiftId
+  const reportId = report.id
+  const { mutateAsync } = save
+
+  const [autosave] = useState(() =>
+    createAutosave<ReportFieldsDto>({
+      baseline: report.updatedAt,
+      onState: setState,
+      isConflict: (e) => e instanceof ApiError && e.status === 409,
+      save: async (f, baseline) => {
+        const saved = await mutateAsync({ shiftId, body: { ...f, updatedAt: baseline } })
+        // Keep the cache fresh so remounting the page never starts from stale text or a stale updatedAt.
+        qc.setQueryData(['report', reportId], saved)
+        return saved
+      },
+    }),
+  )
+  useEffect(() => () => autosave.dispose(), [autosave])
 
   const change = (patch: Partial<ReportFieldsDto>) => {
     const next = { ...fieldsRef.current, ...patch }
     fieldsRef.current = next
-    dirty.current = true
     setFields(next)
+    autosave.change(next)
     setProblems((p) => Object.fromEntries(Object.entries(p).filter(([k]) => !(k in patch))))
   }
-
-  const flush = useCallback(async (): Promise<boolean> => {
-    if (!dirty.current) return true
-    dirty.current = false
-    setState('saving')
-    try {
-      const saved = await save.mutateAsync({ shiftId, body: { ...fieldsRef.current, updatedAt: baseline.current } })
-      baseline.current = saved.updatedAt
-      setState('saved')
-      return true
-    } catch (e) {
-      dirty.current = true
-      setState(e instanceof ApiError && e.status === 409 ? 'conflict' : 'error')
-      return false
-    }
-  }, [save, shiftId])
-
-  useEffect(() => {
-    if (!dirty.current) return
-    const t = setTimeout(() => void flush(), 1000)
-    return () => clearTimeout(t)
-  }, [fields, flush])
 
   const askSubmit = async () => {
     setSubmitError(null)
     const p = reportSubmitProblems(fieldsRef.current)
     setProblems(p)
     if (Object.keys(p).length > 0) return
-    if (await flush()) setConfirming(true)
+    if (await autosave.flush()) setConfirming(true)
   }
   const doSubmit = async () => {
     try {
+      if (!(await autosave.flush())) {
+        setConfirming(false)
+        setSubmitError('Your latest changes could not be saved, so the report was not submitted.')
+        return
+      }
       await submit.mutateAsync(shiftId)
       setConfirming(false)
     } catch (e) {
@@ -75,7 +74,7 @@ export function ReportSupervisorForm({ report, onReload }: { report: ShiftReport
   return (
     <Card
       title="Supervisor's report"
-      actions={<span role="status" className="text-xs text-slate-500">{state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? 'Not saved — retrying when you type' : ''}</span>}
+      actions={<span role="status" className="text-xs text-slate-500">{state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? 'Not saved — will retry when you edit' : ''}</span>}
     >
       <div className="space-y-4">
         {state === 'conflict' && (

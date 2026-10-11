@@ -50,7 +50,7 @@ export function ReportContentView({ content: c, onOpen }: { content: ReportConte
         <StatCard label="Avg. time to resolve" value={f.avgMinutesToResolve === null ? '—' : `${f.avgMinutesToResolve} min`} />
       </div>
       {c.checks.length > 0 && (
-        <div role="status" className="space-y-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-900">
+        <div role="note" className="space-y-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-900">
           <p className="flex items-center gap-1.5 font-semibold"><AlertTriangle className="size-4" aria-hidden />Data checks</p>
           <ul className="list-disc space-y-0.5 pl-5">
             {c.checks.map((x, i) => (

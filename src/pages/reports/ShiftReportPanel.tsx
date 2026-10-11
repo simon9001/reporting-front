@@ -6,9 +6,8 @@ import { Alert, Badge, Card } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
 import { formatTime } from '../../lib/format'
 import { useNow } from '../../lib/useNow'
-import { reportStatusLine } from './reportView'
+import { reportStatusLine, toneBadge } from './reportView'
 
-const toneBadge = { neutral: 'slate', danger: 'red', success: 'green', warning: 'amber' } as const
 const linkBtn = 'inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-[13px] font-semibold focus-visible:focus-halo sm:h-8'
 
 export function ShiftReportPanel({ shiftId, title }: { shiftId: number; title: string }) {
