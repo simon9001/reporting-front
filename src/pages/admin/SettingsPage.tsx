@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useEscalationRules, useSettings, useShiftDefinitions, useUpdateEscalationRules, useUpdateSettings, useUpdateShiftDefinitions } from '../../api/config'
 import { Alert, Button, Card, Field, Input, PageHeader, Spinner, Table, Textarea } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
+import { EmailCard } from './EmailCard'
 import { formatEmailList, numberOrNull, parseEmailList, zodFieldErrors } from '../../lib/forms'
 
 export function SettingsPage() {
@@ -20,6 +21,7 @@ export function SettingsPage() {
       {defs.data ? <ShiftTimesCard defs={defs.data} /> : !failed && <Spinner />}
       {rules.data ? <EscalationCard rules={rules.data} /> : !failed && <Spinner />}
       {settings.data ? <SystemSettingsCard settings={settings.data} /> : !failed && <Spinner />}
+      <EmailCard />
     </div>
   )
 }

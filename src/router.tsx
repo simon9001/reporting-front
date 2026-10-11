@@ -4,6 +4,7 @@ import { HomeRedirect, RequireAuth, RequireRole } from './auth/guards'
 import { LoginPage } from './auth/LoginPage'
 import { AppShell } from './layout/AppShell'
 import { AuditPage } from './pages/admin/AuditPage'
+import { EmailLogPage } from './pages/admin/EmailLogPage'
 import { LookupsPage } from './pages/admin/LookupsPage'
 import { SettingsPage } from './pages/admin/SettingsPage'
 import { UsersPage } from './pages/admin/UsersPage'
@@ -12,6 +13,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { IncidentExplorerPage } from './pages/incidents/IncidentExplorerPage'
 import { IncidentPage } from './pages/incidents/IncidentPage'
 import { ReportPage } from './pages/reports/ReportPage'
+import { ReportsArchivePage } from './pages/reports/ReportsArchivePage'
 import { MyShiftPage } from './pages/MyShiftPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { OfficersPage } from './pages/OfficersPage'
@@ -33,7 +35,7 @@ export const router = createBrowserRouter([
           { path: 'incidents/:ref', element: <IncidentPage /> },
           { path: 'reports/:id', element: <ReportPage /> },
           { element: <RequireRole roles={['OFFICER']} />, children: [{ path: 'my-shift', element: <MyShiftPage /> }] },
-          { element: <RequireRole roles={['DEPUTY_DIRECTOR', 'ADMIN']} />, children: [{ path: 'dashboard', element: <DashboardPage /> }, { path: 'officers', element: <OfficersPage /> }] },
+          { element: <RequireRole roles={['DEPUTY_DIRECTOR', 'ADMIN']} />, children: [{ path: 'dashboard', element: <DashboardPage /> }, { path: 'reports', element: <ReportsArchivePage /> }, { path: 'officers', element: <OfficersPage /> }] },
           {
             element: <RequireRole roles={['ADMIN']} />,
             children: [
@@ -42,6 +44,7 @@ export const router = createBrowserRouter([
               { path: 'admin/lookups', element: <LookupsPage /> },
               { path: 'admin/vehicles', element: <VehiclesPage /> },
               { path: 'admin/audit', element: <AuditPage /> },
+              { path: 'admin/email-log', element: <EmailLogPage /> },
             ],
           },
           { path: '*', element: <NotFoundPage /> },

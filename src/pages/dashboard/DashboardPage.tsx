@@ -19,6 +19,7 @@ import { detectPreset, PRESET_LABELS, presetPeriod, PRESETS, type Period, type P
 import { useNow } from '../../lib/useNow'
 import { useUrlFilters } from '../../lib/urlFilters'
 import { IncidentDrawer } from '../incidents/IncidentDrawer'
+import { ReportsTile } from '../reports/ReportsTile'
 import { clampRange, dayNightLink, drillRange, explorerLink, parseSide, resolvePeriod, sideSplit, sideTrendLink, withSide } from './chartData'
 import { CategoryBars, DayNightBars, MobileHealthPanel, RankedList, SeverityDonut, SideTrendChart, TrendChart } from './charts'
 import { dashboardPanels, hotspotKind, type HotspotKind } from './dashboardLayout'
@@ -178,6 +179,8 @@ export function DashboardPage() {
             </Tabs>
           </Card>
         )}
+
+        <ReportsTile />
 
         <Card title="Needs your attention" className="col-span-full" actions={<Link to={openCriticalHighLink} className="text-[13px] font-medium text-link hover:underline">All open critical / high</Link>}>
           {a.attention.isError ? <Alert>{errorMessage(a.attention.error)}</Alert> : (

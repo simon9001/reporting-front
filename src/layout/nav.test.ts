@@ -6,8 +6,8 @@ const labels = (role: Parameters<typeof navFor>[0]) => navFor(role).flatMap((g) 
 describe('navigation', () => {
   it('shows each role only its pages, grouped', () => {
     expect(labels('OFFICER')).toEqual(['My Shift', 'Incident explorer', 'Roster'])
-    expect(labels('DEPUTY_DIRECTOR')).toEqual(['Dashboard', 'Incident explorer', 'Roster', 'Officers'])
-    expect(labels('ADMIN')).toEqual(['Dashboard', 'Incident explorer', 'Roster', 'Officers', 'Users', 'Settings', 'Lists', 'Vehicles', 'Audit log'])
+    expect(labels('DEPUTY_DIRECTOR')).toEqual(['Dashboard', 'Incident explorer', 'Reports', 'Roster', 'Officers'])
+    expect(labels('ADMIN')).toEqual(['Dashboard', 'Incident explorer', 'Reports', 'Roster', 'Officers', 'Users', 'Settings', 'Lists', 'Vehicles', 'Audit log', 'Email log'])
     expect(navFor('OFFICER').map((g) => g.label)).toEqual([null, 'Incidents', 'Shifts'])
   })
 })

@@ -1,5 +1,5 @@
 import type { Role } from '@sr/shared'
-import { CalendarDays, ClipboardList, LayoutDashboard, List, ScrollText, Search, Settings, Truck, UserCog, Users, type LucideIcon } from 'lucide-react'
+import { CalendarDays, ClipboardList, FileText, LayoutDashboard, List, Mail, ScrollText, Search, Settings, Truck, UserCog, Users, type LucideIcon } from 'lucide-react'
 
 export interface NavItem { to: string; label: string; icon: LucideIcon; roles: Role[] }
 export interface NavGroup { label: string | null; items: NavItem[] }
@@ -15,7 +15,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: LEADERS },
     ],
   },
-  { label: 'Incidents', items: [{ to: '/incidents', label: 'Incident explorer', icon: Search, roles: ALL }] },
+  {
+    label: 'Incidents',
+    items: [
+      { to: '/incidents', label: 'Incident explorer', icon: Search, roles: ALL },
+      { to: '/reports', label: 'Reports', icon: FileText, roles: LEADERS },
+    ],
+  },
   { label: 'Shifts', items: [{ to: '/roster', label: 'Roster', icon: CalendarDays, roles: ALL }] },
   { label: 'People', items: [{ to: '/officers', label: 'Officers', icon: Users, roles: LEADERS }] },
   {
@@ -26,6 +32,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/admin/lookups', label: 'Lists', icon: List, roles: ['ADMIN'] },
       { to: '/admin/vehicles', label: 'Vehicles', icon: Truck, roles: ['ADMIN'] },
       { to: '/admin/audit', label: 'Audit log', icon: ScrollText, roles: ['ADMIN'] },
+      { to: '/admin/email-log', label: 'Email log', icon: Mail, roles: ['ADMIN'] },
     ],
   },
 ]

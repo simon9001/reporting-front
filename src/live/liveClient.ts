@@ -9,7 +9,7 @@ export const TOPIC_QUERY_KEYS: Record<LiveTopic, readonly (readonly string[])[]>
   shift: [['me'], ['roster'], ['incidents'], ['incident'], ['analytics']],
   users: [['users'], ['search'], ['roster'], ['me']],
   config: [['config'], ['me']],
-  audit: [['audit']],
+  audit: [['audit'], ['email-jobs']],
   reports: [['reports'], ['report'], ['incident']],
 }
 
