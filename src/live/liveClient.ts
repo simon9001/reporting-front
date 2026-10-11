@@ -10,6 +10,7 @@ export const TOPIC_QUERY_KEYS: Record<LiveTopic, readonly (readonly string[])[]>
   users: [['users'], ['search'], ['roster'], ['me']],
   config: [['config'], ['me']],
   audit: [['audit']],
+  reports: [['reports'], ['report'], ['incident']],
 }
 
 export function queryKeysForTopics(topics: readonly string[]): (readonly string[])[] {
