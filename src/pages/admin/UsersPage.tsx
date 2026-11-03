@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createUserSchema, passwordSchema, ROLE_LABELS, ROLES, updateUserSchema, type CreateUserInput, type Role, type UpdateUserResult, type UserDto } from '@sr/shared'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useCreateUser, useResetPassword, useUpdateUser, useUsers } from '../../api/users'
+import { useCreateUser, useDeleteUser, useResetPassword, useUpdateUser, useUsers } from '../../api/users'
+import { useMe } from '../../auth/hooks'
 import { DataTable } from '../../components/DataTable'
 import { EmptyState } from '../../components/EmptyState'
 import { FilterBar } from '../../components/FilterBar'
@@ -16,6 +17,8 @@ import { filterUsers } from './userFilters'
 
 export function UsersPage() {
   const users = useUsers()
+  const { data: me } = useMe()
+  const remove = useDeleteUser()
   const { values, set, clear } = useUrlFilters(['q', 'role', 'status'])
   const rows = filterUsers(users.data ?? [], {
     q: values.q,
@@ -25,6 +28,14 @@ export function UsersPage() {
   const [editing, setEditing] = useState<UserDto | null>(null)
   const [resetting, setResetting] = useState<UserDto | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const deleteButton = (u: UserDto) => u.id !== me?.user.id && (
+    <Button variant="ghost" onClick={() => {
+      if (!confirm(`Delete ${u.fullName}? They will no longer be able to sign in. This cannot be undone. Their name stays on past records.`)) return
+      setEditing(null)
+      setResetting(null)
+      remove.mutate(u.id)
+    }}>Delete</Button>
+  )
 
   return (
     <div className="space-y-4">
@@ -50,6 +61,7 @@ export function UsersPage() {
             />
           </FilterBar>
           {users.isError && <Alert>{errorMessage(users.error)}</Alert>}
+          {remove.isError && <Alert>{errorMessage(remove.error)}</Alert>}
           <DataTable
             mobile={(u) => (
               <span className="block space-y-1">
@@ -58,7 +70,7 @@ export function UsersPage() {
                   <span className="flex flex-wrap gap-1">{u.isActive ? <Badge tone="green">Active</Badge> : <Badge>Inactive</Badge>}{u.mustChangePassword && <Badge tone="amber">Must change password</Badge>}</span>
                 </span>
                 <span className="block truncate text-slate-500">{u.email} · {ROLE_LABELS[u.role]}</span>
-                <span className="flex gap-1"><Button variant="ghost" onClick={() => setEditing(u)}>Edit</Button><Button variant="ghost" onClick={() => setResetting(u)}>Reset password</Button></span>
+                <span className="flex flex-wrap gap-1"><Button variant="ghost" onClick={() => setEditing(u)}>Edit</Button><Button variant="ghost" onClick={() => setResetting(u)}>Reset password</Button>{deleteButton(u)}</span>
               </span>
             )}
             columns={[
@@ -67,7 +79,7 @@ export function UsersPage() {
               { key: 'role', header: 'Role', render: (u) => ROLE_LABELS[u.role] },
               { key: 'status', header: 'Status', render: (u) => <span className="flex flex-wrap gap-1">{u.isActive ? <Badge tone="green">Active</Badge> : <Badge>Inactive</Badge>}{u.mustChangePassword && <Badge tone="amber">Must change password</Badge>}</span> },
               { key: 'login', header: 'Last sign-in', render: (u) => (u.lastLoginAt ? formatDateTime(u.lastLoginAt) : '—') },
-              { key: 'actions', header: '', className: 'whitespace-nowrap text-right', render: (u) => <><Button variant="ghost" onClick={() => setEditing(u)}>Edit</Button><Button variant="ghost" onClick={() => setResetting(u)}>Reset password</Button></> },
+              { key: 'actions', header: '', className: 'whitespace-nowrap text-right', render: (u) => <><Button variant="ghost" onClick={() => setEditing(u)}>Edit</Button><Button variant="ghost" onClick={() => setResetting(u)}>Reset password</Button>{deleteButton(u)}</> },
             ]}
             rows={rows}
             rowKey={(u) => u.id}

@@ -39,6 +39,14 @@ export function useSaveIncident() {
   })
 }
 
+export function useDeleteIncident() {
+  const invalidate = useInvalidateIncidents()
+  return useMutation({
+    mutationFn: (id: number) => api<void>(`/incidents/${id}`, { method: 'DELETE' }),
+    onSuccess: () => { void invalidate() }, // not awaited: the caller leaves the deleted incident's page first
+  })
+}
+
 export function useUploadSnapshots() {
   const invalidate = useInvalidateIncidents()
   return useMutation({

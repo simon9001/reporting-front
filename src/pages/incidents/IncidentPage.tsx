@@ -1,8 +1,8 @@
 import { incidentPlace } from '@sr/shared'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
-import { useIncident } from '../../api/incidents'
+import { Link, useNavigate, useParams } from 'react-router'
+import { useDeleteIncident, useIncident } from '../../api/incidents'
 import { Skeleton } from '../../components/EmptyState'
 import { Alert, Button, Card, PageHeader } from '../../components/ui'
 import { ApiError, errorMessage } from '../../lib/api'
@@ -14,6 +14,8 @@ export function IncidentPage() {
   const { ref: rawRef = '' } = useParams()
   const ref = rawRef.trim().toUpperCase()
   const q = useIncident(ref)
+  const remove = useDeleteIncident()
+  const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
   return (
     <>
@@ -25,8 +27,18 @@ export function IncidentPage() {
           <PageHeader
             title={q.data.ref}
             description={`${q.data.category.value} at ${incidentPlace(q.data)} · ${formatDateTime(q.data.occurredAt)}`}
-            actions={q.data.canEdit && <Button onClick={() => setEditing(true)}><Pencil className="size-4" />Edit</Button>}
+            actions={q.data.canEdit && (
+              <>
+                {q.data.canDelete && (
+                  <Button variant="secondary" disabled={remove.isPending} onClick={() => { if (confirm(`Delete ${q.data.ref}? This cannot be undone.`)) remove.mutate(q.data.id, { onSuccess: () => navigate('/incidents', { replace: true }) }) }}>
+                    <Trash2 className="size-4" />Delete
+                  </Button>
+                )}
+                <Button onClick={() => setEditing(true)}><Pencil className="size-4" />Edit</Button>
+              </>
+            )}
           />
+          {remove.isError && <Alert>{errorMessage(remove.error)}</Alert>}
           <Card><IncidentDetail incident={q.data} /></Card>
           <IncidentFormDrawer open={editing} onClose={() => setEditing(false)} incident={q.data} onSaved={() => setEditing(false)} />
         </>

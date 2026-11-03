@@ -84,3 +84,11 @@ export function useUpdateVehicle() {
     onSuccess: () => qc.invalidateQueries({ queryKey: configKeys.vehicles }),
   })
 }
+
+export function useDeleteVehicle() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api<void>(`/config/vehicles/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: configKeys.vehicles }),
+  })
+}

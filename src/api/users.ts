@@ -28,6 +28,14 @@ export function useUpdateUser() {
   })
 }
 
+export function useDeleteUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api<void>(`/users/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKey }),
+  })
+}
+
 export function useResetPassword() {
   return useMutation({
     mutationFn: ({ id, password }: { id: number; password: string }) => api<void>(`/users/${id}/reset-password`, { method: 'POST', body: { password } }),
