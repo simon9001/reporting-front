@@ -16,7 +16,7 @@ import { reportStatusLine, toneBadge } from './reportView'
 
 function SubmittedFields({ r }: { r: ShiftReportDto }) {
   return (
-    <Card title="Supervisor's report">
+    <Card title="Officer's report">
       <dl className="grid gap-x-4 gap-y-3 md:grid-cols-2">
         <div><dt className="text-xs text-slate-500">Overall status</dt><dd className="text-[13px]">{r.fields.overallStatus ? OVERALL_STATUS_LABELS[r.fields.overallStatus] : '—'}</dd></div>
         {REPORT_TEXT_FIELDS.map((k) => (
@@ -54,7 +54,7 @@ export function ReportPage() {
     <>
       <PageHeader
         title={`${s.shiftName} shift report`}
-        description={`${formatDate(s.shiftDate)} · ${formatTime(s.startsAt)}–${formatTime(s.endsAt)} · Supervisor ${s.supervisor.fullName} · Officer ${s.officer.fullName}`}
+        description={`${formatDate(s.shiftDate)} · ${formatTime(s.startsAt)}–${formatTime(s.endsAt)} · Officer ${s.supervisor.fullName}${s.officer ? ` · Also on shift ${s.officer.fullName}` : ''}`}
         actions={
           <>
             <Badge tone={toneBadge[line.tone]}>{line.text}</Badge>

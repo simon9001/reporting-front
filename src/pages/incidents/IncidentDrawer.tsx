@@ -9,7 +9,10 @@ import { errorMessage } from '../../lib/api'
 import { IncidentDetail } from './IncidentDetail'
 import { IncidentFormDrawer } from './IncidentFormDrawer'
 
-export function IncidentDrawer({ idOrRef, onClose }: { idOrRef: string | null; onClose: () => void }) {
+export function IncidentDrawer({ idOrRef: openedAs, onClose }: { idOrRef: string | null; onClose: () => void }) {
+  // Changing the weighbridge type renumbers the incident; keep showing it under its new ref.
+  const [moved, setMoved] = useState<{ from: string; to: string } | null>(null)
+  const idOrRef = openedAs && moved?.from === openedAs ? moved.to : openedAs
   const q = useIncident(idOrRef)
   const remove = useDeleteIncident()
   const [editing, setEditing] = useState(false)
@@ -40,7 +43,7 @@ export function IncidentDrawer({ idOrRef, onClose }: { idOrRef: string | null; o
         {remove.isError && <div className="mb-3"><Alert>{errorMessage(remove.error)}</Alert></div>}
         {q.isPending ? <Skeleton rows={8} /> : q.isError ? <Alert>{errorMessage(q.error)}</Alert> : <IncidentDetail incident={q.data} />}
       </Drawer>
-      {incident && <IncidentFormDrawer open={editing} onClose={() => setEditing(false)} incident={incident} onSaved={() => setEditing(false)} />}
+      {incident && <IncidentFormDrawer open={editing} onClose={() => setEditing(false)} incident={incident} onSaved={(dto) => { setEditing(false); if (openedAs && dto.ref !== incident.ref) setMoved({ from: openedAs, to: dto.ref }) }} />}
     </>
   )
 }

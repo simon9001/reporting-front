@@ -42,8 +42,7 @@ test('admin adds officers and rosters them; the supervisor sees their shift', as
   await page.getByRole('link', { name: 'Roster' }).click()
   const { date, code } = currentShift()
   const cell = page.getByTestId(`cell-${date}-${code}`)
-  await cell.getByLabel('Supervisor').selectOption({ label: 'Antony Ochieng' })
-  await cell.getByLabel('Officer').selectOption({ label: 'Simon Gatungo' })
+  await cell.getByLabel('Officer').selectOption({ label: 'Antony Ochieng' })
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByText('Saved 1 shift.')).toBeVisible()
 
@@ -54,6 +53,6 @@ test('admin adds officers and rosters them; the supervisor sees their shift', as
   await signIn(page, 'antony@test.local', 'OfficerTemp2026')
   await changePassword(page, 'OfficerTemp2026', 'AntonyFinal2026')
   await expect(page).toHaveURL(/\/my-shift$/)
-  await expect(page.getByText('You are the Shift Supervisor for this shift.')).toBeVisible()
+  await expect(page.getByText('You are the officer on duty for this shift.')).toBeVisible()
   await expect(page.getByText('Simon Gatungo').first()).toBeVisible()
 })

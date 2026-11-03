@@ -9,7 +9,7 @@ export function UpcomingShifts({ userId, now }: { userId: number; now: Date }) {
   const roster = useRoster(addDays(today, -1), addDays(today, 14))
   if (roster.isPending) return <Spinner />
   if (roster.isError) return <Alert>{errorMessage(roster.error)}</Alert>
-  const mine = roster.data.filter((s) => new Date(s.endsAt) > now && (s.supervisor.id === userId || s.officer.id === userId))
+  const mine = roster.data.filter((s) => new Date(s.endsAt) > now && (s.supervisor.id === userId || s.officer?.id === userId))
 
   return (
     <Card title="My upcoming shifts">
@@ -20,7 +20,7 @@ export function UpcomingShifts({ userId, now }: { userId: number; now: Date }) {
           {mine.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
               <span>{s.shiftName} · {formatDateTime(s.startsAt)} → {formatDateTime(s.endsAt)}</span>
-              <Badge tone="blue">{s.supervisor.id === userId ? 'Supervisor' : 'Officer'}</Badge>
+              <Badge tone="blue">On duty</Badge>
             </li>
           ))}
         </ul>

@@ -7,7 +7,6 @@ export interface RosterListRow {
   shiftCode: string
   shiftName: string
   planned: boolean
-  supervisor: string | null
   officer: string | null
   needsReassign: boolean
 }
@@ -21,11 +20,10 @@ export function rosterListRows(rows: RosterRow[], defs: ShiftDefinitionDto[], f:
     shiftCode: c.shiftCode,
     shiftName: names.get(c.shiftCode) ?? c.shiftCode,
     planned: !!c.shift,
-    supervisor: c.shift?.supervisor.fullName ?? null,
-    officer: c.shift?.officer.fullName ?? null,
-    needsReassign: !!c.shift && (!c.shift.supervisor.rosterable || !c.shift.officer.rosterable),
+    officer: c.shift?.supervisor.fullName ?? null,
+    needsReassign: !!c.shift && !c.shift.supervisor.rosterable,
   })).filter((r) =>
-    (!q || `${r.supervisor ?? ''} ${r.officer ?? ''}`.toLowerCase().includes(q)) &&
+    (!q || (r.officer ?? '').toLowerCase().includes(q)) &&
     (!f.shiftCode || r.shiftCode === f.shiftCode) &&
     (!f.status || (f.status === 'planned') === r.planned),
   )

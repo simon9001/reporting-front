@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bucketLabel, clampRange, dayNightLink, drillRange, explorerLink, HEALTH_TILES, parseSide, resolvePeriod, shiftColor, sideSplit, sideTrendLink, weekLabel, withSide } from './chartData'
+import { bucketLabel, clampRange, dayNightLink, drillRange, explorerLink, HEALTH_TILES, parseSide, resolvePeriod, shiftColor, sideSplit, sideTrendLink, trendHighlights, weekLabel, withSide } from './chartData'
 
 describe('dashboard chart helpers', () => {
   it('labels buckets and works out the range a click drills into', () => {
@@ -65,5 +65,16 @@ describe('dashboard chart helpers', () => {
     expect(shiftColor('DAY')).toBe('#0891b2')
     expect(shiftColor('NIGHT')).toBe('#6d28d9')
     expect(shiftColor('EVENING')).toBe('#64748b')
+  })
+})
+
+describe('trendHighlights', () => {
+  const point = (bucket: string, total: number) => ({ bucket, LOW: total, MEDIUM: 0, HIGH: 0, CRITICAL: 0, total, movingAvg: null })
+  it('averages per bucket and names the busiest, the earliest on a tie', () => {
+    expect(trendHighlights({ granularity: 'day', points: [point('2026-11-01', 1), point('2026-11-02', 4), point('2026-11-03', 4), point('2026-11-04', 0)] }))
+      .toEqual({ averageLabel: 'Daily average', average: '2.3', busiest: '02/11 (4)' })
+  })
+  it('has no busiest bucket when nothing happened', () => {
+    expect(trendHighlights({ granularity: 'week', points: [point('2026-11-02', 0)] })).toEqual({ averageLabel: 'Weekly average', average: '0', busiest: '—' })
   })
 })

@@ -2,7 +2,7 @@ import { addDays, fromDateString, localDateString, type RosterEntryInput, type S
 
 export interface RosterCell { key: string; shiftDate: string; shiftCode: string; shift: ShiftDto | null }
 export interface RosterRow { shiftDate: string; cells: RosterCell[] }
-export interface Draft { supervisorId: number | null; officerId: number | null }
+export interface Draft { supervisorId: number | null }
 
 export const cellKey = (shiftDate: string, shiftCode: string) => `${shiftDate}|${shiftCode}`
 
@@ -22,9 +22,7 @@ export function buildRosterRows(start: string, days: number, defs: ShiftDefiniti
 }
 
 export function draftProblem(d: Draft): string | null {
-  if (d.supervisorId === null || d.officerId === null) return 'Choose both people'
-  if (d.supervisorId === d.officerId) return 'Supervisor and Officer must be different'
-  return null
+  return d.supervisorId === null ? 'Choose the officer' : null
 }
 
 export function collectChanges(drafts: Map<string, Draft>, rows: RosterRow[]) {
@@ -33,10 +31,10 @@ export function collectChanges(drafts: Map<string, Draft>, rows: RosterRow[]) {
   for (const cell of rows.flatMap((r) => r.cells)) {
     const draft = drafts.get(cell.key)
     if (!draft) continue
-    if (cell.shift && draft.supervisorId === cell.shift.supervisor.id && draft.officerId === cell.shift.officer.id) continue
+    if (cell.shift && draft.supervisorId === cell.shift.supervisor.id) continue
     const problem = draftProblem(draft)
     if (problem) problems.set(cell.key, problem)
-    else entries.push({ shiftDate: cell.shiftDate, shiftCode: cell.shiftCode, supervisorId: draft.supervisorId!, officerId: draft.officerId! })
+    else entries.push({ shiftDate: cell.shiftDate, shiftCode: cell.shiftCode, supervisorId: draft.supervisorId! })
   }
   return { entries, problems }
 }

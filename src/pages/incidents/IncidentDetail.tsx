@@ -1,4 +1,4 @@
-import { incidentPlace, type IncidentDto } from '@sr/shared'
+import { incidentCategory, incidentPlace, type IncidentDto } from '@sr/shared'
 import type { ReactNode } from 'react'
 import { useDeleteSnapshot } from '../../api/incidents'
 import { EscalationBadge, LinkChip, SeverityBadge, SideBadge, StatusBadge, VehicleStatusChip } from '../../components/badges'
@@ -42,8 +42,8 @@ export function IncidentDetail({ incident: i }: { incident: IncidentDto; onEdit?
         ) : (
           <Fact label="Location">{incidentPlace(i)}{i.locationDetail && ` · ${i.locationDetail}`}</Fact>
         )}
-        <Fact label="Category">{i.category.value}</Fact>
-        <Fact label="Shift" wide>{i.shiftName} shift of {formatDate(i.shiftDate)}{i.afterMidnight && <span className="text-slate-500"> (after midnight)</span>}<span className="block text-xs text-slate-500">Supervisor {i.supervisorName} · Officer {i.officerName}</span></Fact>
+        <Fact label="Category">{incidentCategory(i)}</Fact>
+        <Fact label="Shift" wide>{i.shiftName} shift of {formatDate(i.shiftDate)}{i.afterMidnight && <span className="text-slate-500"> (after midnight)</span>}<span className="block text-xs text-slate-500">Officer {i.supervisorName}{i.officerName && ` · Also on shift ${i.officerName}`}</span></Fact>
         <Fact label={i.side === 'MOBILE' ? 'Logged by' : 'Reported by'}>{i.reportedBy.fullName}</Fact>
         {i.immediateAction && <Fact label={i.side === 'MOBILE' ? 'Action taken' : 'Immediate action'} wide>{i.immediateAction}</Fact>}
         {i.remarks && <Fact label="Remarks" wide>{i.remarks}</Fact>}

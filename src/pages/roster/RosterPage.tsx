@@ -35,7 +35,6 @@ export function RosterPage() {
   const compact = useCompact()
   const isList = rosterViewFor(view.values.view, compact) === 'list'
   const [drafts, setDrafts] = useState(new Map<string, Draft>())
-  const [swapRoles, setSwapRoles] = useState(true)
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
 
   if (defs.isPending || roster.isPending) return <Spinner />
@@ -50,7 +49,7 @@ export function RosterPage() {
   const setDraft = (cell: RosterCell, patch: Partial<Draft>) =>
     setDrafts((prev) => {
       const next = new Map(prev)
-      const base = prev.get(cell.key) ?? { supervisorId: cell.shift?.supervisor.id ?? null, officerId: cell.shift?.officer.id ?? null }
+      const base = prev.get(cell.key) ?? { supervisorId: cell.shift?.supervisor.id ?? null }
       next.set(cell.key, { ...base, ...patch })
       return next
     })
@@ -71,7 +70,7 @@ export function RosterPage() {
   })
 
   const copyPrevious = () => run(async () => {
-    const r = await copyWeek.mutateAsync({ fromWeekStart: addDays(weekStart, -7), toWeekStart: weekStart, swapRoles })
+    const r = await copyWeek.mutateAsync({ fromWeekStart: addDays(weekStart, -7), toWeekStart: weekStart })
     return `Copied ${r.created} shift(s) from the previous week; ${r.skipped} skipped (already planned, ended, or officer inactive).`
   })
 
@@ -84,7 +83,7 @@ export function RosterPage() {
     <div className="space-y-4">
       <PageHeader
         title="Roster"
-        description={canEdit ? 'Choose the Shift Supervisor and the Control Room Officer for each shift.' : 'Who is on duty for each shift.'}
+        description={canEdit ? 'Choose the officer on duty for each shift.' : 'Who is on duty for each shift.'}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Segmented label="View" value={isList ? 'list' : 'grid'} onChange={(v) => view.set({ view: v })} options={[{ value: 'grid', label: 'Grid' }, { value: 'list', label: 'List' }]} />
@@ -113,9 +112,6 @@ export function RosterPage() {
           <Button variant="secondary" onClick={() => setDrafts(new Map())} disabled={drafts.size === 0}>Discard</Button>
           {otherWeeks > 0 && <span className="text-sm text-amber-800">{otherWeeks} unsaved change(s) in other weeks</span>}
           <Button variant="secondary" onClick={copyPrevious} disabled={copyWeek.isPending}>Copy previous week into first week</Button>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={swapRoles} onChange={(e) => setSwapRoles(e.target.checked)} /> Swap Supervisor / Officer when copying
-          </label>
         </div>
       )}
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
@@ -168,9 +164,9 @@ function ReadOnlyCell({ cell }: { cell: RosterCell }) {
   if (!cell.shift) return <span className="text-slate-400">Not planned</span>
   return (
     <div className="space-y-0.5">
-      <div><span className="text-xs text-slate-500">Supervisor </span>{cell.shift.supervisor.fullName}</div>
-      <div><span className="text-xs text-slate-500">Officer </span>{cell.shift.officer.fullName}</div>
-      <InactiveNotes people={[cell.shift.supervisor, cell.shift.officer]} />
+      <div><span className="text-xs text-slate-500">Officer </span>{cell.shift.supervisor.fullName}</div>
+      {cell.shift.officer && <div><span className="text-xs text-slate-500">Also on shift </span>{cell.shift.officer.fullName}</div>}
+      <InactiveNotes people={[cell.shift.supervisor]} />
     </div>
   )
 }
@@ -200,17 +196,15 @@ function EditableCell(props: {
 }) {
   const { cell, draft, officers, problem, canDelete, onChange, onDelete } = props
   const supervisorId = draft?.supervisorId ?? cell.shift?.supervisor.id ?? null
-  const officerId = draft?.officerId ?? cell.shift?.officer.id ?? null
-  // Keep people already on the shift selectable even if they were deactivated since.
+  // Keep the person already on the shift selectable even if they were deactivated since.
   const people: { id: number; fullName: string }[] = [...officers]
-  for (const p of [cell.shift?.supervisor, cell.shift?.officer]) if (p && !people.some((x) => x.id === p.id)) people.push(p)
+  if (cell.shift && !people.some((x) => x.id === cell.shift!.supervisor.id)) people.push(cell.shift.supervisor)
 
   return (
     <div className={cx('min-w-48 space-y-1', draft && 'rounded bg-amber-50 p-1')}>
-      <PersonSelect label="Supervisor" value={supervisorId} people={people} onChange={(id) => onChange({ supervisorId: id })} />
-      <PersonSelect label="Officer" value={officerId} people={people} onChange={(id) => onChange({ officerId: id })} />
+      <PersonSelect label="Officer" value={supervisorId} people={people} onChange={(id) => onChange({ supervisorId: id })} />
       {problem && <p className="text-xs text-red-600">{problem}</p>}
-      {cell.shift && <InactiveNotes people={[cell.shift.supervisor, cell.shift.officer].filter((p) => p.id === supervisorId || p.id === officerId)} />}
+      {cell.shift && <InactiveNotes people={[cell.shift.supervisor].filter((p) => p.id === supervisorId)} />}
       {canDelete && !draft && (
         <button type="button" className="text-xs text-red-700 underline" onClick={onDelete}>Remove shift</button>
       )}

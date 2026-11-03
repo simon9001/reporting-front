@@ -30,7 +30,7 @@ export function ReportsArchivePage() {
   const label = (r: ReportListItemDto) => `Open ${r.shiftName} shift report ${formatDate(r.shiftDate)}`
   return (
     <>
-      <PageHeader title="Reports" description={list.data ? `${list.data.total} shift report${list.data.total === 1 ? '' : 's'}` : 'Shift reports submitted by Shift Supervisors'} />
+      <PageHeader title="Reports" description={list.data ? `${list.data.total} shift report${list.data.total === 1 ? '' : 's'}` : 'Shift reports submitted by the officers on duty'} />
       <Card>
         <div className="space-y-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -44,7 +44,7 @@ export function ReportsArchivePage() {
             columns={[
               { key: 'date', header: 'Date', className: 'whitespace-nowrap', render: (r) => formatDate(r.shiftDate) },
               { key: 'shift', header: 'Shift', render: (r) => r.shiftName },
-              { key: 'sup', header: 'Supervisor', render: (r) => r.supervisor.fullName },
+              { key: 'sup', header: 'Officer', render: (r) => r.supervisor.fullName },
               { key: 'status', header: 'Status', render: (r) => <StatusBadge r={r} /> },
               { key: 'overall', header: 'Overall status', render: (r) => (r.overallStatus ? OVERALL_STATUS_LABELS[r.overallStatus] : '—') },
               { key: 'submitted', header: 'Submitted', className: 'whitespace-nowrap', render: (r) => (r.submittedAt ? formatDateTime(r.submittedAt) : '—') },

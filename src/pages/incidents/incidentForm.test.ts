@@ -1,6 +1,38 @@
-import { incidentInputSchema, type IncidentDto, type MeResponse, type ShiftRole } from '@sr/shared'
+import { incidentCategory, incidentInputSchema, isOtherCategory, type IncidentDto, type MeResponse, type ShiftRole } from '@sr/shared'
 import { describe, expect, it } from 'vitest'
-import { canLogIncidents, defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, mergeSnapshots, resolvePlace } from './incidentForm'
+import { canLogIncidents, defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, mergeSnapshots, resolvePlace, switchSide } from './incidentForm'
+
+describe('changing the weighbridge type', () => {
+  const places = [{ id: 3, value: 'Mlolongo' }]
+  const base = emptyForm('2026-09-29T22:15:00.000Z')
+
+  it('carries a listed place across in both directions', () => {
+    const mobile = switchSide({ ...base, locationId: '3' }, 'MOBILE', places)
+    expect(mobile).toMatchObject({ side: 'MOBILE', place: 'Mlolongo' })
+    expect(switchSide({ ...base, side: 'MOBILE', place: 'mlolongo' }, 'STATIC', places)).toMatchObject({ side: 'STATIC', locationId: '3' })
+  })
+
+  it('leaves a typed place that is not listed for the user to choose', () => {
+    expect(switchSide({ ...base, side: 'MOBILE', place: 'Athi River' }, 'STATIC', places)).toMatchObject({ side: 'STATIC', locationId: '' })
+  })
+
+  it('sends the side and category text it holds', () => {
+    const input = formToInput({ ...base, categoryId: '5', categoryText: 'Fallen tree' })
+    expect(input).toMatchObject({ side: 'STATIC', categoryId: 5, categoryText: 'Fallen tree' })
+  })
+})
+
+describe('the Other category', () => {
+  it('is recognised as Other or Others only', () => {
+    expect(['Other', 'others', ' OTHERS '].every(isOtherCategory)).toBe(true)
+    expect(['CCTV', 'Other systems'].some(isOtherCategory)).toBe(false)
+  })
+
+  it('shows the typed text with the category', () => {
+    expect(incidentCategory({ category: { value: 'Other' }, categoryText: 'Fallen tree' })).toBe('Other: Fallen tree')
+    expect(incidentCategory({ category: { value: 'CCTV' }, categoryText: null })).toBe('CCTV')
+  })
+})
 
 describe('incident form mapping', () => {
   it('starts at "now" in Nairobi wall time with sensible defaults', () => {

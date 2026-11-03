@@ -10,6 +10,7 @@ export interface IncidentFormState {
   locationId: string
   locationDetail: string
   categoryId: string
+  categoryText: string
   severity: Severity | ''
   description: string
   immediateAction: string
@@ -31,7 +32,7 @@ export interface IncidentFormState {
 
 export function emptyForm(nowIso: string, side: IncidentSide = 'STATIC'): IncidentFormState {
   return {
-    side, occurredAt: toWallTimeInput(nowIso), locationId: '', locationDetail: '', categoryId: '', severity: '',
+    side, occurredAt: toWallTimeInput(nowIso), locationId: '', locationDetail: '', categoryId: '', categoryText: '', severity: '',
     description: '', immediateAction: '', escalatedTo: '', escalatedAt: '', assignedTo: '', status: 'OPEN', resolvedAt: '', resolution: '',
     vehicleId: '', place: '', vehicleStatus: '', gpsStatus: '', dashcamStatus: '', platformId: '', remarks: '',
   }
@@ -45,6 +46,7 @@ export function formFromIncident(i: IncidentDto): IncidentFormState {
     locationId: !mobile && i.location ? String(i.location.id) : '',
     locationDetail: i.locationDetail ?? '',
     categoryId: String(i.category.id),
+    categoryText: i.categoryText ?? '',
     severity: i.severity,
     description: i.description,
     immediateAction: i.immediateAction ?? '',
@@ -74,10 +76,22 @@ export function resolvePlace(text: string, places: { id: number; value: string }
   return hit ? { locationId: hit.id, locationText: null } : { locationId: null, locationText: t }
 }
 
+/** Carries the place across when the weighbridge type changes, so it does not have to be entered again. */
+export function switchSide(f: IncidentFormState, side: IncidentSide, places: { id: number; value: string }[]): IncidentFormState {
+  if (side === f.side) return f
+  if (side === 'MOBILE') {
+    const listed = places.find((p) => String(p.id) === f.locationId)
+    return { ...f, side, place: f.place || (listed?.value ?? '') }
+  }
+  const { locationId } = resolvePlace(f.place, places)
+  return { ...f, side, locationId: f.locationId || (locationId ? String(locationId) : '') }
+}
+
 export function formToInput(f: IncidentFormState, places: { id: number; value: string }[] = []): IncidentInput {
   const common = {
     occurredAt: f.occurredAt ? fromWallTimeInput(f.occurredAt) : '',
     categoryId: Number(f.categoryId) || 0,
+    categoryText: f.categoryText || null,
     severity: (f.severity || undefined) as Severity,
     description: f.description,
     immediateAction: f.immediateAction || null,

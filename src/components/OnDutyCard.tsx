@@ -16,17 +16,14 @@ export function OnDutyCard({ currentShift, now, canPlan, myRole, variant = 'tile
   const start = Date.parse(currentShift.startsAt)
   const end = Date.parse(currentShift.endsAt)
   const pct = Math.min(100, Math.max(0, ((now.getTime() - start) / (end - start)) * 100))
-  const headline =
-    myRole === 'SUPERVISOR' ? 'You are the Shift Supervisor for this shift.'
-      : myRole === 'OFFICER' ? 'You are the Control Room Officer for this shift.'
-      : `${formatDuration(end - now.getTime())} remaining`
+  const headline = myRole ? 'You are the officer on duty for this shift.' : `${formatDuration(end - now.getTime())} remaining`
   const label = `${myRole ? 'Your shift' : 'On duty now'} · ${currentShift.shiftName} · ${formatDate(currentShift.shiftDate)}`
   const banner = variant === 'banner'
 
   const names = shift ? (
     <dl className={cx('grid gap-0.5 text-xs', banner && 'md:flex md:gap-4')}>
-      <div className="flex min-w-0 gap-1.5"><dt className="shrink-0 text-silver-400">Supervisor</dt><dd className="truncate font-medium text-white">{shift.supervisor.fullName}</dd></div>
-      <div className="flex min-w-0 gap-1.5"><dt className="shrink-0 text-silver-400">Officer</dt><dd className="truncate font-medium text-white">{shift.officer.fullName}</dd></div>
+      <div className="flex min-w-0 gap-1.5"><dt className="shrink-0 text-silver-400">Officer</dt><dd className="truncate font-medium text-white">{shift.supervisor.fullName}</dd></div>
+      {shift.officer && <div className="flex min-w-0 gap-1.5"><dt className="shrink-0 text-silver-400">Also on shift</dt><dd className="truncate font-medium text-white">{shift.officer.fullName}</dd></div>}
     </dl>
   ) : (
     <p className="text-xs text-white/90">
@@ -42,15 +39,14 @@ export function OnDutyCard({ currentShift, now, canPlan, myRole, variant = 'tile
         <span className="shrink-0">{formatDuration(end - now.getTime())} left</span>
       </div>
       <div className="mt-1 h-1 rounded-full bg-white/15" role="progressbar" aria-label="Shift progress" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
-        <div className="h-1 rounded-full road-dash" style={{ width: `${pct}%` }} />
+        <div className="h-1 rounded-full bg-highway-400" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
 
   if (banner) {
     return (
-      <section className="relative overflow-hidden rounded-lg bg-asphalt-800 px-4 py-3 text-white">
-        <div className="absolute inset-x-0 top-0 h-0.5 road-dash" aria-hidden />
+      <section className="overflow-hidden rounded-lg bg-asphalt-800 px-4 py-3 text-white">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
           <div className="min-w-0 md:flex-1">
             <p className="text-xs font-semibold text-silver-400">{label}</p>
@@ -63,8 +59,7 @@ export function OnDutyCard({ currentShift, now, canPlan, myRole, variant = 'tile
     )
   }
   return (
-    <section className="relative flex h-full flex-col justify-between gap-2 overflow-hidden rounded-lg bg-asphalt-800 p-3 text-white">
-      <div className="absolute inset-x-0 top-0 h-0.5 road-dash" aria-hidden />
+    <section className="flex flex-col justify-between gap-3 overflow-hidden rounded-xl bg-asphalt-800 p-4 text-white">
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold text-silver-400">{label}</p>
         <p className="mt-0.5 text-[13px] font-semibold text-highway-400">{headline}</p>

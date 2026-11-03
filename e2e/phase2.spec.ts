@@ -28,7 +28,7 @@ test('officer logs an incident with a snapshot; the Deputy Director sees it live
   const officer = await officerContext.newPage()
   await signIn(officer, 'e2e-sup@test.local', 'SupervisorPass2026')
   await expect(officer).toHaveURL(/\/my-shift$/)
-  await expect(officer.getByText('You are the Shift Supervisor for this shift.')).toBeVisible()
+  await expect(officer.getByText('You are the officer on duty for this shift.')).toBeVisible()
 
   await officer.getByRole('button', { name: 'Log incident' }).click()
   await officer.getByRole('dialog').locator('label', { hasText: /^Location(?! detail)/ }).locator('select').selectOption({ label: 'Weighbridge 04' })

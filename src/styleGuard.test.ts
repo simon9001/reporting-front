@@ -14,13 +14,16 @@ const SHADOW_OK: string[] = [
   'auth/LoginPage.tsx', 'auth/ChangePasswordPage.tsx',
 ]
 
+/** The dashboard's softer panels and larger headline numbers. */
+const DASHBOARD: string[] = ['pages/dashboard/panels.tsx', 'pages/reports/ReportsTile.tsx', 'components/OnDutyCard.tsx']
+
 /** Each rule: pattern, reason, and the only files (relative to src/) allowed to use it. */
 const BANNED: { re: RegExp; why: string; allow?: string[] }[] = [
-  { re: /\brounded(-[trblse]{1,2})?-(xl|2xl|3xl)\b/, why: 'panels are rounded-lg, controls rounded-md' },
+  { re: /\brounded(-[trblse]{1,2})?-(xl|2xl|3xl)\b/, why: 'panels are rounded-lg, controls rounded-md', allow: DASHBOARD },
   { re: /rounded-\[10px\]/, why: 'controls are rounded-md' },
   { re: /(^|[\s'"`:])h-10\b/, why: 'controls are h-9 sm:h-8' },
-  { re: /\btext-2xl\b/, why: 'text-2xl is only the KPI value', allow: ['components/StatCard.tsx'] },
-  { re: /\btext-(3xl|4xl|5xl|6xl|7xl)\b/, why: 'largest type is text-xl for titles' },
+  { re: /\btext-2xl\b/, why: 'text-2xl is only the KPI value', allow: ['components/StatCard.tsx', ...DASHBOARD] },
+  { re: /\btext-(3xl|4xl|5xl|6xl|7xl)\b/, why: 'largest type is text-xl for titles', allow: DASHBOARD },
   { re: /\btext-\[(2[1-9]|[3-9]\d)px\]/, why: 'arbitrary text above 20px is not allowed', allow: ['pages/NotFoundPage.tsx'] },
   { re: /\bshadow-(sm|md|lg|xl|2xl)\b/, why: 'no drop shadows except shadow-card on overlays' },
   { re: /\bshadow\b(?![-\w])/, why: 'no bare drop shadow (use shadow-card on overlays only)' },

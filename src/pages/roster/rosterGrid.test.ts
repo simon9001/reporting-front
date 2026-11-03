@@ -9,7 +9,7 @@ const defs: ShiftDefinitionDto[] = [
 const shift: ShiftDto = {
   id: 9, shiftDate: '2030-01-07', shiftCode: 'DAY', shiftName: 'Day',
   startsAt: '2030-01-07T05:00:00.000Z', endsAt: '2030-01-07T14:00:00.000Z',
-  supervisor: { id: 1, fullName: 'Antony Ochieng', rosterable: true }, officer: { id: 2, fullName: 'Simon Gatungo', rosterable: true },
+  supervisor: { id: 1, fullName: 'Antony Ochieng', rosterable: true }, officer: null,
 }
 
 describe('roster grid', () => {
@@ -22,21 +22,20 @@ describe('roster grid', () => {
   })
 
   it('validates drafts', () => {
-    expect(draftProblem({ supervisorId: 1, officerId: null })).toBe('Choose both people')
-    expect(draftProblem({ supervisorId: 1, officerId: 1 })).toBe('Supervisor and Officer must be different')
-    expect(draftProblem({ supervisorId: 1, officerId: 2 })).toBeNull()
+    expect(draftProblem({ supervisorId: null })).toBe('Choose the officer')
+    expect(draftProblem({ supervisorId: 1 })).toBeNull()
   })
 
   it('collects only real, valid changes', () => {
     const rows = buildRosterRows('2030-01-07', 2, defs, [shift])
     const drafts = new Map<string, Draft>([
-      ['2030-01-07|DAY', { supervisorId: 1, officerId: 2 }], // unchanged
-      ['2030-01-07|NIGHT', { supervisorId: 2, officerId: 1 }], // new
-      ['2030-01-08|DAY', { supervisorId: 3, officerId: 3 }], // invalid
+      ['2030-01-07|DAY', { supervisorId: 1 }], // unchanged
+      ['2030-01-07|NIGHT', { supervisorId: 2 }], // new
+      ['2030-01-08|DAY', { supervisorId: null }], // invalid
     ])
     const { entries, problems } = collectChanges(drafts, rows)
-    expect(entries).toEqual([{ shiftDate: '2030-01-07', shiftCode: 'NIGHT', supervisorId: 2, officerId: 1 }])
-    expect(problems.get('2030-01-08|DAY')).toBe('Supervisor and Officer must be different')
+    expect(entries).toEqual([{ shiftDate: '2030-01-07', shiftCode: 'NIGHT', supervisorId: 2 }])
+    expect(problems.get('2030-01-08|DAY')).toBe('Choose the officer')
   })
 
   it('labels weekdays', () => {
@@ -45,12 +44,12 @@ describe('roster grid', () => {
 
   it('removes only the saved drafts and counts drafts outside the visible rows', () => {
     const drafts = new Map<string, Draft>([
-      ['2030-01-07|DAY', { supervisorId: 1, officerId: 2 }],
-      ['2030-02-04|DAY', { supervisorId: 2, officerId: 1 }],
+      ['2030-01-07|DAY', { supervisorId: 1 }],
+      ['2030-02-04|DAY', { supervisorId: 2 }],
     ])
     const rows = buildRosterRows('2030-01-07', 2, defs, [])
     expect(draftsOutsideView(drafts, rows)).toBe(1)
-    const left = removeSavedDrafts(drafts, [{ shiftDate: '2030-01-07', shiftCode: 'DAY', supervisorId: 1, officerId: 2 }])
+    const left = removeSavedDrafts(drafts, [{ shiftDate: '2030-01-07', shiftCode: 'DAY', supervisorId: 1 }])
     expect([...left.keys()]).toEqual(['2030-02-04|DAY'])
   })
 

@@ -1,4 +1,4 @@
-import { incidentPlace } from '@sr/shared'
+import { incidentCategory, incidentPlace } from '@sr/shared'
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -26,7 +26,7 @@ export function IncidentPage() {
         <>
           <PageHeader
             title={q.data.ref}
-            description={`${q.data.category.value} at ${incidentPlace(q.data)} · ${formatDateTime(q.data.occurredAt)}`}
+            description={`${incidentCategory(q.data)} at ${incidentPlace(q.data)} · ${formatDateTime(q.data.occurredAt)}`}
             actions={q.data.canEdit && (
               <>
                 {q.data.canDelete && (
@@ -40,7 +40,7 @@ export function IncidentPage() {
           />
           {remove.isError && <Alert>{errorMessage(remove.error)}</Alert>}
           <Card><IncidentDetail incident={q.data} /></Card>
-          <IncidentFormDrawer open={editing} onClose={() => setEditing(false)} incident={q.data} onSaved={() => setEditing(false)} />
+          <IncidentFormDrawer open={editing} onClose={() => setEditing(false)} incident={q.data} onSaved={(dto) => { setEditing(false); if (dto.ref !== q.data.ref) navigate(`/incidents/${dto.ref}`, { replace: true }) }} />
         </>
       )}
     </>

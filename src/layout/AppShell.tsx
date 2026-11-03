@@ -84,7 +84,7 @@ export function AppShell() {
               {currentShift && (
                 <span className="hidden items-center gap-1.5 whitespace-nowrap rounded-full bg-silver-100 px-2.5 py-0.5 text-xs font-medium text-asphalt-800 md:flex">
                   {currentShift.shiftName} shift · {formatDate(currentShift.shiftDate)}
-                  {currentShift.myRole && <Badge tone="blue">{currentShift.myRole === 'SUPERVISOR' ? 'Supervisor' : 'Officer'}</Badge>}
+                  {currentShift.myRole && <Badge tone="blue">On duty</Badge>}
                 </span>
               )}
               <LiveIndicator />

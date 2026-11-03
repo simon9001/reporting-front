@@ -43,7 +43,7 @@ export function Sidebar({ role, mode, onNavigate, onSignOut, onExpand, expanded 
         <span className="rounded-md bg-white p-0.5"><img src="/kenha-logo.png" alt="KeNHA" className="h-7 w-auto" /></span>
         <span className="font-display text-[13px] font-semibold leading-tight">Control<br />Room</span>
       </div>
-      <div className="mx-4 h-0.5 rounded-full road-dash opacity-80" aria-hidden />
+      <div className="mx-4 h-px bg-white/15" aria-hidden />
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2" aria-label="Main">
         {groups.map((group, gi) => (
           <div key={gi} className="space-y-0.5">

@@ -9,7 +9,7 @@ const defs: ShiftDefinitionDto[] = [
 ]
 const shift = {
   id: 9, shiftDate: '2030-01-07', shiftCode: 'DAY', shiftName: 'Day', startsAt: '', endsAt: '',
-  supervisor: { id: 1, fullName: 'Antony Ochieng', rosterable: true }, officer: { id: 2, fullName: 'Simon Gatungo', rosterable: false },
+  supervisor: { id: 1, fullName: 'Antony Ochieng', rosterable: false }, officer: null,
 } as ShiftDto
 
 describe('rosterListRows', () => {
@@ -24,11 +24,11 @@ describe('rosterListRows', () => {
   it('lists every date and shift with planned status', () => {
     const list = rosterListRows(rows, defs, {})
     expect(list).toHaveLength(4)
-    expect(list[0]).toMatchObject({ shiftDate: '2030-01-07', shiftName: 'Day', planned: true, supervisor: 'Antony Ochieng', needsReassign: true })
+    expect(list[0]).toMatchObject({ shiftDate: '2030-01-07', shiftName: 'Day', planned: true, officer: 'Antony Ochieng', needsReassign: true })
     expect(list[1]).toMatchObject({ shiftName: 'Night', planned: false })
   })
   it('filters by officer name, shift and status', () => {
-    expect(rosterListRows(rows, defs, { q: 'simon' })).toHaveLength(1)
+    expect(rosterListRows(rows, defs, { q: 'antony' })).toHaveLength(1)
     expect(rosterListRows(rows, defs, { shiftCode: 'NIGHT' })).toHaveLength(2)
     expect(rosterListRows(rows, defs, { status: 'unplanned' })).toHaveLength(3)
   })

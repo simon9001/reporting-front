@@ -1,4 +1,4 @@
-import { incidentPlace, type IncidentListItemDto, type Paged, type Role, type UserDto } from '@sr/shared'
+import { incidentCategory, incidentPlace, type IncidentListItemDto, type Paged, type Role, type UserDto } from '@sr/shared'
 import { useQuery } from '@tanstack/react-query'
 import { FileWarning, Search, User } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
@@ -50,7 +50,7 @@ export function CommandPalette({ onClose, role }: { onClose: () => void; role: R
       .filter((i) => !lower || i.label.toLowerCase().includes(lower))
       .map((i) => ({ id: `p${i.to}`, label: i.label, to: i.to, kind: 'page' as const }))
     const found = (incidents.data?.items ?? []).slice(0, 6).map((i) => ({
-      id: `i${i.id}`, label: `${i.ref} · ${i.category.value}`, detail: `${i.vehicle ? `${i.vehicle.unitId} · ` : ''}${incidentPlace(i)} · ${formatDateTime(i.occurredAt)}`, to: `/incidents?open=${i.ref}`, kind: 'incident' as const,
+      id: `i${i.id}`, label: `${i.ref} · ${incidentCategory(i)}`, detail: `${i.vehicle ? `${i.vehicle.unitId} · ` : ''}${incidentPlace(i)} · ${formatDateTime(i.occurredAt)}`, to: `/incidents?open=${i.ref}`, kind: 'incident' as const,
     }))
     const people = lower.length >= 2
       ? (officers.data ?? []).filter((u) => u.fullName.toLowerCase().includes(lower)).slice(0, 4)

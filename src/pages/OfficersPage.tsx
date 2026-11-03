@@ -16,7 +16,7 @@ export function OfficersPage() {
   const rows = filterUsers(users.data ?? [], { q: values.q, status: status === 'all' ? undefined : status })
   return (
     <>
-      <PageHeader title="Officers" description="Control Room Officers who can be rostered as Shift Supervisor or Officer." />
+      <PageHeader title="Officers" description="Control Room Officers who can be rostered on a shift." />
       <Card>
         <div className="space-y-4">
           <FilterBar search={values.q ?? ''} onSearchChange={(q) => set({ q: q || undefined })} placeholder="Search name or email…" canClear={!!values.q || !!values.status} onClear={clear}>

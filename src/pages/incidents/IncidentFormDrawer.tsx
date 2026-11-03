@@ -1,5 +1,5 @@
 import {
-  INCIDENT_SIDE_LABELS, INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, incidentInputSchema, LINK_STATUS_LABELS, LINK_STATUSES,
+  INCIDENT_REF_PREFIX, INCIDENT_SIDE_LABELS, INCIDENT_STATUS_LABELS, INCIDENT_STATUSES, incidentInputSchema, isOtherCategory, LINK_STATUS_LABELS, LINK_STATUSES,
   MAX_ATTACHMENT_BYTES, MAX_ATTACHMENTS_PER_INCIDENT, SEVERITIES, SEVERITY_LABELS, VEHICLE_STATUS_LABELS, VEHICLE_STATUSES,
   type IncidentDto, type IncidentStatus, type LinkStatus, type Severity, type VehicleStatus,
 } from '@sr/shared'
@@ -16,7 +16,7 @@ import { ApiError, errorMessage } from '../../lib/api'
 import { WeighbridgeChoice } from './WeighbridgeChoice'
 import { formatDateTime } from '../../lib/format'
 import { zodFieldErrors } from '../../lib/forms'
-import { defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, isResolved, mergeSnapshots, type IncidentFormState } from './incidentForm'
+import { defaultOccurredAt, emptyForm, escalationHint, formFromIncident, formToInput, isResolved, mergeSnapshots, switchSide, type IncidentFormState } from './incidentForm'
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,application/pdf'
 
@@ -103,6 +103,10 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
   const timeHint = late ? `Late entries for the ${late.shiftName.toLowerCase()} shift can go back to ${formatDateTime(late.startsAt)}` : undefined
   const hint = escalationHint(rule, form.severity)
   const mobile = form.side === 'MOBILE'
+  // canDelete is false once the shift's report is submitted, which is also when the type stops being changeable.
+  const canChangeSide = !incident || incident.canDelete
+  const sideChanged = !!incident && form.side !== incident.side
+  const chosenCategory = categories.data?.find((c) => String(c.id) === form.categoryId)
 
   const whenField = (
     <Field label="Date and time" error={errors.occurredAt} hint={timeHint}>
@@ -115,6 +119,11 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         <option value="">Choose…</option>
         {activeOrCurrent(categories.data, form.categoryId).map((c) => <option key={c.id} value={c.id}>{c.value}</option>)}
       </Select>
+    </Field>
+  )
+  const categoryTextField = chosenCategory && isOtherCategory(chosenCategory.value) && (
+    <Field label="What is the category?" error={errors.categoryText} hint="For anything not in the list">
+      <Input maxLength={100} value={form.categoryText} onChange={(e) => set('categoryText', e.target.value)} />
     </Field>
   )
   const severityField = (
@@ -158,10 +167,15 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         {errors.side && <Alert>{errors.side}</Alert>}
         {notice && <Alert tone="warning">{notice}</Alert>}
 
-        {incident ? (
-          <p className="flex items-center gap-2 text-sm text-slate-600"><SideBadge side={form.side} />{INCIDENT_SIDE_LABELS[form.side]} incident</p>
+        {canChangeSide ? (
+          <WeighbridgeChoice value={form.side} onChange={(v) => { setForm((f) => switchSide(f, v, placeOptions)); setErrors({}) }} />
         ) : (
-          <WeighbridgeChoice value={form.side} onChange={(v) => { set('side', v); setErrors({}) }} />
+          <p className="flex items-center gap-2 text-sm text-slate-600"><SideBadge side={form.side} />{INCIDENT_SIDE_LABELS[form.side]} incident</p>
+        )}
+        {sideChanged && incident && (
+          <Alert tone="warning">
+            Saving gives {incident.ref} a new {INCIDENT_REF_PREFIX[form.side]} number and removes the details that only apply to a {INCIDENT_SIDE_LABELS[incident.side].toLowerCase()}.
+          </Alert>
         )}
 
         {mobile ? (
@@ -211,6 +225,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
             <section className="grid gap-4 border-t border-line pt-4 md:grid-cols-2">
               <h3 className="text-sm font-semibold text-slate-800 md:col-span-2">Tracking</h3>
               {categoryField}
+              {categoryTextField}
               {severityField}
             </section>
           </>
@@ -224,6 +239,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
               </Select>
             </Field>
             {categoryField}
+            {categoryTextField}
             <Field label="Location detail" error={errors.locationDetail} hint="Optional, e.g. camera number">
               <Input value={form.locationDetail} onChange={(e) => set('locationDetail', e.target.value)} />
             </Field>
@@ -272,7 +288,7 @@ export function IncidentFormDrawer({ open, onClose, incident: incidentProp, onSa
         </section>
 
         <section className="space-y-2 border-t border-line pt-4">
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 px-4 py-4 text-[13px] text-slate-600 hover:border-asphalt-800 hover:bg-highway-50">
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4 text-[13px] text-slate-600 hover:border-asphalt-800 hover:bg-highway-50">
             <ImagePlus className="size-5 text-slate-400" aria-hidden />
             <span>Add snapshots <span className="text-slate-400">(photos, screenshots or PDF · up to 10 MB each)</span></span>
             <input type="file" multiple accept={ACCEPT} className="sr-only" aria-label="Add snapshots" onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />

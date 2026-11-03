@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { incidentPlace, type IncidentListItemDto, type IncidentSide } from '@sr/shared'
+import { incidentCategory, incidentPlace, type IncidentListItemDto, type IncidentSide } from '@sr/shared'
 import { Paperclip } from 'lucide-react'
 import { SeverityBadge, SideBadge, StatusBadge } from '../../components/badges'
 import type { Column } from '../../components/DataTable'
@@ -20,12 +20,12 @@ export function incidentColumns({ showShift = true, side }: { showShift?: boolea
     { key: 'side', header: 'Side', sortKey: 'side', render: (i) => <SideBadge side={i.side} /> },
     { key: 'occurredAt', header: 'Date / time', sortKey: 'occurredAt', className: 'whitespace-nowrap', render: (i) => formatDateTime(i.occurredAt) },
     { key: 'location', header: placeHeader(side), render: (i) => <Where i={i} /> },
-    { key: 'category', header: 'Category', render: (i) => i.category.value },
+    { key: 'category', header: 'Category', render: (i) => incidentCategory(i) },
     { key: 'severity', header: 'Severity', sortKey: 'severity', render: (i) => <SeverityBadge severity={i.severity} /> },
     { key: 'status', header: 'Status', sortKey: 'status', render: (i) => <StatusBadge status={i.status} /> },
   ]
   if (showShift) {
-    cols.push({ key: 'shift', header: 'Shift / Supervisor', render: (i) => <span className="text-slate-600">{i.shiftName} {formatDate(i.shiftDate)}<span className="block text-xs text-slate-500">{i.supervisorName}</span></span> })
+    cols.push({ key: 'shift', header: 'Shift / Officer', render: (i) => <span className="text-slate-600">{i.shiftName} {formatDate(i.shiftDate)}<span className="block text-xs text-slate-500">{i.supervisorName}</span></span> })
   }
   cols.push({
     key: 'files', header: <Paperclip className="size-3.5" aria-label="Snapshots" />, className: 'text-right',

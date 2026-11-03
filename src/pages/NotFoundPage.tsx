@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 export function NotFoundPage() {
   return (
     <section className="mx-auto flex max-w-lg flex-col items-center py-10 text-center">
-      <div className="h-1.5 w-40 rounded-full road-dash" aria-hidden />
+      <div className="h-1.5 w-40 rounded-full bg-highway-400" aria-hidden />
       <p className="mt-6 font-display text-[40px] font-bold leading-none tracking-tight text-asphalt-900 tabular-nums">404</p>
       <h1 className="mt-2 font-display text-xl font-semibold text-asphalt-900">Page not found</h1>
       <p className="mt-1 text-[13px] text-slate-500">The page you asked for does not exist or has moved.</p>

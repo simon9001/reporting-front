@@ -1,7 +1,7 @@
-import { INCIDENT_SIDE_SHORT, INCIDENT_SIDES, type CountByDto, type DayNightDto, type IncidentSide, type IncidentTrendDto, type MobileHealthDto, type Severity, type SideTrendDto } from '@sr/shared'
-import type { ReactNode } from 'react'
+import { INCIDENT_SIDE_SHORT, INCIDENT_SIDES, SEVERITY_LABELS, type CountByDto, type DayNightDto, type IncidentSide, type IncidentTrendDto, type MobileHealthDto, type Severity, type SideTrendDto, type TrendPointDto } from '@sr/shared'
+import { useId, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { SEVERITY_COLORS, SIDE_COLORS } from '../../components/badges'
 import { EmptyState } from '../../components/EmptyState'
 import { bucketLabel, HEALTH_TILES, shiftColor, weekLabel } from './chartData'
@@ -22,25 +22,52 @@ function SrTable({ caption, head, rows }: { caption: string; head: string[]; row
 const tooltipStyle = { borderRadius: 8, border: 'none', boxShadow: '0 8px 24px -12px rgb(20 23 27 / 0.3)', fontSize: 12 }
 const GRID = '#eceef1'
 
-export function TrendChart({ data, onBucketClick, bucketHref }: { data: IncidentTrendDto; onBucketClick: (bucket: string) => void; bucketHref: (bucket: string) => string }) {
-  if (data.points.every((p) => p.total === 0)) return <EmptyState title="No incidents in this period" />
+const AREA_COLOR = '#f5c400'
+
+function TrendTooltip({ active, payload }: { active?: boolean; payload?: readonly { payload?: TrendPointDto & { label: string } }[] }) {
+  const p = payload?.[0]?.payload
+  if (!active || !p) return null
+  return (
+    <div className="rounded-lg bg-white p-2 text-xs text-asphalt-800 shadow-[0_8px_24px_-12px_rgb(20_23_27/0.3)]">
+      <p className="font-semibold">{p.label} · {p.total} incident{p.total === 1 ? '' : 's'}</p>
+      <ul className="mt-1 space-y-0.5">
+        {(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] as Severity[]).map((s) => (
+          <li key={s} className="flex items-center gap-1.5"><span className="size-2 rounded-sm" style={{ background: SEVERITY_COLORS[s] }} aria-hidden />{SEVERITY_LABELS[s]} {p[s]}</li>
+        ))}
+      </ul>
+      {p.movingAvg !== null && <p className="mt-1 text-slate-500">7-day average {p.movingAvg}</p>}
+    </div>
+  )
+}
+
+/** Incidents over time on the dark highlight panel: one series, so the panel title names it; severities are in the tooltip and table. */
+export function TrendArea({ data, onBucketClick, bucketHref }: { data: IncidentTrendDto; onBucketClick: (bucket: string) => void; bucketHref: (bucket: string) => string }) {
+  const gradientId = useId()
+  if (data.points.every((p) => p.total === 0)) return <p className="flex h-[180px] items-center justify-center text-[13px] text-white/75">No incidents in this period</p>
   const rows = data.points.map((p) => ({ ...p, label: bucketLabel(p.bucket, data.granularity) }))
-  const click = (_: unknown, index: number) => { const p = rows[index]; if (p) onBucketClick(p.bucket) }
+  const axisOnDark = { fontSize: 11, fill: 'rgb(255 255 255 / 0.75)' }
   return (
     <>
-    <div className="h-[200px]" role="img" aria-label="Incidents over time by severity (table follows)">
+    <div className="h-[180px]" role="img" aria-label="Incidents over time (table follows)">
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid vertical={false} stroke={GRID} />
-          <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-          <YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f1f2f4' }} />
-          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-          {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as Severity[]).map((s) => (
-            <Bar key={s} dataKey={s} name={s[0] + s.slice(1).toLowerCase()} stackId="sev" fill={SEVERITY_COLORS[s]} stroke="#fff" strokeWidth={2} onClick={click} cursor="pointer" maxBarSize={28} />
-          ))}
-          {data.granularity === 'day' && <Line dataKey="movingAvg" name="7-day average" stroke="#1c1f24" strokeDasharray="4 3" dot={false} strokeWidth={2} />}
-        </ComposedChart>
+        <AreaChart
+          data={rows}
+          margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+          onClick={(state) => { const p = rows[Number(state.activeTooltipIndex)]; if (p) onBucketClick(p.bucket) }}
+          style={{ cursor: 'pointer' }}
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={AREA_COLOR} stopOpacity={0.45} />
+              <stop offset="100%" stopColor={AREA_COLOR} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.12)" />
+          <XAxis dataKey="label" tick={axisOnDark} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
+          <YAxis allowDecimals={false} tick={axisOnDark} tickLine={false} axisLine={false} />
+          <Tooltip content={TrendTooltip} cursor={{ stroke: 'rgb(255 255 255 / 0.4)' }} />
+          <Area type="monotone" dataKey="total" name="Incidents" stroke={AREA_COLOR} strokeWidth={2} fill={`url(#${gradientId})`} activeDot={{ r: 5, stroke: '#10312f', strokeWidth: 2, fill: AREA_COLOR }} />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
     <SrTable
@@ -52,47 +79,38 @@ export function TrendChart({ data, onBucketClick, bucketHref }: { data: Incident
   )
 }
 
-export function SeverityDonut({ data, onSliceClick, bySide = false }: { data: CountByDto[]; onSliceClick: (severity: Severity) => void; bySide?: boolean }) {
+export function SeverityDonut({ data, onSliceClick }: { data: CountByDto[]; onSliceClick: (severity: Severity) => void }) {
   const total = data.reduce((s, d) => s + d.count, 0)
   if (total === 0) return <EmptyState title="No incidents" />
   return (
-    <div>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative size-[140px] shrink-0" role="img" aria-label={`Incidents by severity, ${total} in total`}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={data} dataKey="count" nameKey="label" innerRadius="62%" outerRadius="95%" paddingAngle={1.5} stroke="none" onClick={(_, index) => { const d = data[index]; if (d) onSliceClick(d.key as Severity) }} cursor="pointer">
-                {data.map((d) => <Cell key={d.key} fill={SEVERITY_COLORS[d.key as Severity]} />)}
-              </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-display text-xl font-semibold text-slate-900">{total}</span>
-            <span className="text-xs text-slate-500">incidents</span>
-          </div>
+    <div className="flex flex-wrap items-center gap-4">
+      <div className="relative size-[132px] shrink-0" role="img" aria-label={`Incidents by severity, ${total} in total`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={data} dataKey="count" nameKey="label" innerRadius="68%" outerRadius="98%" paddingAngle={2} cornerRadius={3} stroke="none" onClick={(_, index) => { const d = data[index]; if (d) onSliceClick(d.key as Severity) }} cursor="pointer">
+              {data.map((d) => <Cell key={d.key} fill={SEVERITY_COLORS[d.key as Severity]} />)}
+            </Pie>
+            <Tooltip contentStyle={tooltipStyle} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="font-display text-xl font-semibold text-slate-900 tabular-nums">{total}</span>
+          <span className="text-xs text-slate-500">incidents</span>
         </div>
-        <ul className="space-y-1 text-[13px]">
-          {data.map((d) => (
-            <li key={d.key}>
-              <button type="button" className="flex items-center gap-2 hover:underline" onClick={() => onSliceClick(d.key as Severity)}>
-                <span className="size-2.5 rounded-sm" style={{ background: SEVERITY_COLORS[d.key as Severity] }} aria-hidden />
-                <span className="text-slate-700">{d.label}</span>
-                <span className="font-semibold text-slate-900">{d.count}</span>
-                <span className="text-xs text-slate-400">{Math.round((d.count / total) * 100)}%</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <SrTable caption="Incidents by severity" head={['Severity', 'Incidents']} rows={data.map((d) => [d.label, d.count])} />
       </div>
-      {bySide && (
-        <table className="mt-2 w-full text-left text-xs">
-          <caption className="sr-only">Incidents by severity for static and mobile weighbridges</caption>
-          <thead className="text-slate-500"><tr><th scope="col" className="py-1 font-medium">Severity</th><th scope="col" className="py-1 font-medium">Static</th><th scope="col" className="py-1 font-medium">Mobile</th></tr></thead>
-          <tbody className="divide-y divide-slate-100">{data.map((d) => <tr key={d.key}><th scope="row" className="py-1 font-normal text-slate-700">{d.label}</th><td className="py-1">{d.static}</td><td className="py-1">{d.mobile}</td></tr>)}</tbody>
-        </table>
-      )}
+      <ul className="min-w-40 flex-1 space-y-1 text-[13px]">
+        {data.map((d) => (
+          <li key={d.key}>
+            <button type="button" className="flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-silver-100" onClick={() => onSliceClick(d.key as Severity)}>
+              <span className="size-2.5 shrink-0 rounded-full" style={{ background: SEVERITY_COLORS[d.key as Severity] }} aria-hidden />
+              <span className="flex-1 text-slate-700">{d.label}</span>
+              <span className="font-semibold text-slate-900 tabular-nums">{d.count}</span>
+              <span className="w-9 text-right text-xs text-slate-500 tabular-nums">{Math.round((d.count / total) * 100)}%</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <SrTable caption="Incidents by severity" head={['Severity', 'Incidents', 'Static', 'Mobile']} rows={data.map((d) => [d.label, d.count, d.static, d.mobile])} />
     </div>
   )
 }

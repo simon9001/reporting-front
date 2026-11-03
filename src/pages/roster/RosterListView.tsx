@@ -30,14 +30,13 @@ export function RosterListView({ rows, defs }: { rows: RosterRow[]; defs: ShiftD
               <span className="font-medium text-asphalt-900">{formatDate(r.shiftDate)} · {r.shiftName}</span>
               {!r.planned ? <Badge tone="amber">Not planned</Badge> : r.needsReassign ? <Badge tone="red">Reassign</Badge> : <Badge tone="green">Planned</Badge>}
             </span>
-            <span className="block truncate text-slate-600">Supervisor {r.supervisor ?? '—'} · Officer {r.officer ?? '—'}</span>
+            <span className="block truncate text-slate-600">Officer {r.officer ?? '—'}</span>
           </span>
         )}
         columns={[
           { key: 'date', header: 'Date', className: 'whitespace-nowrap', render: (r) => formatDate(r.shiftDate) },
           { key: 'shift', header: 'Shift', render: (r) => r.shiftName },
-          { key: 'sup', header: 'Shift Supervisor', render: (r) => r.supervisor ?? <span className="text-slate-400">—</span> },
-          { key: 'off', header: 'Control Room Officer', render: (r) => r.officer ?? <span className="text-slate-400">—</span> },
+          { key: 'off', header: 'Officer', render: (r) => r.officer ?? <span className="text-slate-400">—</span> },
           { key: 'status', header: 'Status', render: (r) => (!r.planned ? <Badge tone="amber">Not planned</Badge> : r.needsReassign ? <Badge tone="red">Reassign</Badge> : <Badge tone="green">Planned</Badge>) },
         ]}
         rows={list}

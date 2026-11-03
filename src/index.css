@@ -22,6 +22,11 @@
   --color-night: #6d28d9;
   --color-link: #1d4ed8;
 
+  /* Dashboard highlight panels */
+  --color-pine-600: #0e7c6b;
+  --color-pine-800: #0f4f4a;
+  --color-pine-900: #10312f;
+
   /* brand-* keeps every existing utility working: pale yellows for tints, charcoal for ink and buttons */
   --color-brand-50: #fffbe6;
   --color-brand-100: #fff3b8;
@@ -38,11 +43,6 @@
   --shadow-card: 0 1px 2px rgb(20 23 27 / 0.06), 0 8px 24px -12px rgb(20 23 27 / 0.18);
   /* Wall monitors in the control room */
   --breakpoint-3xl: 120rem;
-}
-
-/* A dashed highway-yellow road marking, used for progress bars and accents. */
-@utility road-dash {
-  background-image: repeating-linear-gradient(90deg, var(--color-highway-400) 0 14px, transparent 14px 22px);
 }
 
 html,

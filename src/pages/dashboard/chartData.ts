@@ -1,4 +1,4 @@
-import { addDays, daysBetween, fromDateString, INCIDENT_SIDES, toDateString, type IncidentSide, type MobileHealthDto, type SideStats } from '@sr/shared'
+import { addDays, daysBetween, fromDateString, INCIDENT_SIDES, toDateString, type IncidentSide, type IncidentTrendDto, type MobileHealthDto, type SideStats } from '@sr/shared'
 import type { Period } from '../../lib/periods'
 
 const ddmm = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}`
@@ -45,6 +45,15 @@ export function sideTrendLink(bucket: string, granularity: 'day' | 'week', side:
 export function sideSplit(bySide: Record<IncidentSide, SideStats>, pick: (s: SideStats) => number | null, unit = ''): string {
   const f = (v: number | null) => (v === null ? '—' : `${v}${unit}`)
   return `Static ${f(pick(bySide.STATIC))} · Mobile ${f(pick(bySide.MOBILE))}`
+}
+
+/** The headline figures beside the trend: the average per bucket and the busiest bucket (the earliest when tied). */
+export function trendHighlights(t: IncidentTrendDto): { averageLabel: string; average: string; busiest: string } {
+  const averageLabel = t.granularity === 'day' ? 'Daily average' : 'Weekly average'
+  const total = t.points.reduce((n, p) => n + p.total, 0)
+  if (t.points.length === 0 || total === 0) return { averageLabel, average: '0', busiest: '—' }
+  const top = t.points.reduce((best, p) => (p.total > best.total ? p : best))
+  return { averageLabel, average: (Math.round((total / t.points.length) * 10) / 10).toString(), busiest: `${bucketLabel(top.bucket, t.granularity)} (${top.total})` }
 }
 
 type HealthKey = Exclude<keyof MobileHealthDto, 'total' | 'platforms'>

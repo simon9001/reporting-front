@@ -11,7 +11,7 @@ import { formatDate, formatTime } from '../../lib/format'
 import { useNow } from '../../lib/useNow'
 
 /**
- * Editable while DRAFT for the shift's supervisor; autosaves 1s after typing stops; Submit flushes (and awaits) any save first.
+ * Editable while DRAFT for the shift's officer; autosaves 1s after typing stops; Submit flushes (and awaits) any save first.
  * Leaving the page still saves pending edits (the save outlives the form), and the browser warns before closing with unsaved edits.
  */
 export function ReportSupervisorForm({ report, onReload }: { report: ShiftReportDto; onReload: () => void }) {
@@ -92,7 +92,7 @@ export function ReportSupervisorForm({ report, onReload }: { report: ShiftReport
   const shiftLabel = `${report.content.shift.shiftName} shift report for ${formatDate(report.content.shift.shiftDate)}`
   return (
     <Card
-      title="Supervisor's report"
+      title="Officer's report"
       actions={<span role="status" className="text-xs text-slate-500">{state === 'pending' ? 'Unsaved changes' : state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? 'Not saved — will retry when you edit' : ''}</span>}
     >
       <div className="space-y-4">
